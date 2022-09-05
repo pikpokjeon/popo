@@ -1,3 +1,8 @@
+const id = id => document.getElementById( id )
+const name = name => document.getElementsByName( name )
+
+export const el = {id,name}
+
 const typeOf = ['number', 'function', 'string', 'undefined', "symbol", "object"]
 const initType =
 {
@@ -25,7 +30,7 @@ export const setAttr = (type, el, attr={} ) =>
             acc.setAttribute(key,val)
             return acc
         },el )    
-    }else
+    } else return el
 }
 
 export const updateChildren = ( type, parent, children = [] ) =>
@@ -36,13 +41,27 @@ export const updateChildren = ( type, parent, children = [] ) =>
     {
         acc.appendChild( cur )
         return acc
-    },parent)
+    }, parent )
+    return parent
     
 }
 
-export const createElement = ( type ) => ( tag, attr = {}, children=[] ) =>
+export const createElement =  type  => ( tag, attr = {}, children=[] ) =>
 {
     const el = type === 'svg' ?  document.createElementNS('http://www.w3.org/2000/svg', tag) : document.createElement(tag)
+    if ( isChildren( attr ) )
+    {
+        updateChildren(type,el,children)
+        return el
+    }
     setAttr( type, el, attr )
+    updateChildren(type,el,children)
+    return el
     
+}
+
+export const element = type => tag => ( attr ={}, children=[] ) =>
+{
+    const elByType = createElement( type )
+    return isChildren( attr ) ? elByType( tag, {},attr) : elByType(tag,attr,children)
 }
