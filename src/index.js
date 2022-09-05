@@ -15,8 +15,17 @@ const li = Array( tiles ).fill( 0 ).map( ( _, i ) =>
     return li( {text: `${i}`} )
 } )
 
+const k = HTML( 'li' )
 
-const lists = ul( [...li] )
+// 출력성공
+const lists = ul( [...li, HTML( 'li' )( {text: 'ohhhh'} ), k( {text: 'gg'}, k( {text: '4343'} ) )] )
+
+mainDOM.appendChild( lists )
+
+
+
+//출력성공
+
 const squares = ( iX, iY, arr ) =>
 {
     if ( iY > 10 )
@@ -26,10 +35,10 @@ const squares = ( iX, iY, arr ) =>
     else if ( iX > 15 )
     {
         iX = 0, iY++
-    return squares( 0, iY, arr )
-        
-    } 
-const x = width / tiles * iX
+        return squares( 0, iY, arr )
+
+    }
+    const x = width / tiles * iX
     const y = width / tiles * iY
     const Rect = SVG( 'rect' )
     const square = Rect( {name: 'square', id: `square-${iX + iY}`, width: width / tiles, height: width / tiles, x, y, fill: 'red', stroke: 'white'} )
@@ -41,5 +50,5 @@ const x = width / tiles * iX
 
 const sGroup = svg( {width: width, height: width, overflow: 'visible'}, [...squares( 0, 0, [] )] )
 
-mainDOM.appendChild( lists )
+
 mainDOM.appendChild( sGroup )
