@@ -40,9 +40,11 @@ export const setAttr = (type, el, attr={} ) =>
 export const updateChildren = ( type, parent, children = [] ) =>
 {
     if ( is['undefined']( children ) ) return parent
-    if ( !is['array']( children ) ) children = [...children]
+    if ( !is['array']( children ) ) children = [children]
+    
     children.reduce( ( acc, cur ) =>
     {
+        console.log(cur)
         acc.appendChild( cur )
         return acc
     }, parent )
