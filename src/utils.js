@@ -22,12 +22,16 @@ export const isChildren = data => is['array']( data ) || is['string']( data ) ||
 export const setAttr = (type, el, attr={} ) => 
 {
     const attributes = Object.entries(attr)
-    if ( is['array']( attr ) )
+    if ( is['array']( attributes ) )
     {
         return attributes.reduce( ( acc, [key, val] ) =>
         {
-            if(key === 'text') acc.appendChild(document.createTextNode(val))
-            acc.setAttribute(key,val)
+            if ( key === 'text' )
+            {
+                console.log(acc)
+              acc.appendChild(document.createTextNode(val))  
+            } 
+            else acc.setAttribute(key,val)
             return acc
         },el )    
     } else return el
