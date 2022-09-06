@@ -71,3 +71,18 @@ export const element = type => tag => ( attr ={}, children=[] ) =>
     const elByType = createElement( type )
     return isChildren( attr ) ? elByType( tag, {},attr) : elByType(tag,attr,children)
 }
+
+export const setObj = ( obj, target, key ) => Object.keys( obj ).reduce( ( acc, k) =>
+{
+    Reflect.set( acc, k, acc[k] )
+    return acc
+    
+}, is['string']( key ) ? target[key] : target )
+
+
+const renderTo = ( target, children = [] ) =>
+{
+    const root = el.id( target )
+    root.innerHTML = ''
+    updateChildren('',root,children)
+}
