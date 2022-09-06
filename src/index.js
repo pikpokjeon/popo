@@ -69,6 +69,7 @@ const sGroup = svg( {width: width, height: width, overflow: 'visible'},
 
 mainDOM.appendChild( sGroup )
 
+// 업데이트 필요함
 const randomPosition = ( trap, apple ) =>
 {
     const random = ( num ) => Math.floor( Math.random() * num )
@@ -82,6 +83,7 @@ const randomPosition = ( trap, apple ) =>
     } )
 
     console.log( randomX, randomY )
+    return {trap:positions[0], apple:positions[1]}
 }
 
 randomPosition( trap, apple )
