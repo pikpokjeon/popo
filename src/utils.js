@@ -1,6 +1,11 @@
+import {Is} from './lib.js'
+ 
 const id = id => document.getElementById( id )
 const name = name => document.getElementsByName( name )
 
+const pipe = ( initData, ...fns ) =>
+    fns.reduce( ( returned, fn ) => fn( returned ), initData )
+    
 export const el = {id,name}
 
 const typeOf = ['number', 'function', 'string', 'undefined', "symbol", "object"]
@@ -19,32 +24,41 @@ export const is = typeOf.reduce((typeObj, type) => Object.assign(typeObj, { [typ
 
 export const isChildren = data => is['array']( data ) || is['string']( data ) || 'nodeName' in data 
 
-export const setAttr = (type, el, attr={} ) => 
+export const setAttr = (type, el, attr ) => 
 {
-    const attributes = Object.entries(attr)
+    const attributes = Object.entries( attr )
     if ( is['array']( attributes ) )
     {
         return attributes.reduce( ( acc, [key, val] ) =>
         {
+    console.log(key,val)
+    
             if ( key === 'text' )
             {
-                console.log(acc)
               acc.appendChild(document.createTextNode(val))  
             } 
             else acc.setAttribute(key,val)
             return acc
         },el )    
-    } else return el
+    }
+    return el
+}
+
+export const removeChildren = parent => 
+{
+    while ( parent.firstChild )
+    {
+        parent.removeChild(parent.firstChild)
+    }
+    return parent
 }
 
 export const updateChildren = ( type, parent, children = [] ) =>
 {
     if ( is['undefined']( children ) ) return parent
     if ( !is['array']( children ) ) children = [children]
-    
     children.reduce( ( acc, cur ) =>
     {
-        console.log(cur)
         acc.appendChild( cur )
         return acc
     }, parent )
@@ -72,15 +86,16 @@ export const element = type => tag => ( attr ={}, children=[] ) =>
     return isChildren( attr ) ? elByType( tag, {},attr) : elByType(tag,attr,children)
 }
 
-export const setObj = ( obj, target, key ) => Object.keys( obj ).reduce( ( acc, k) =>
+export const fragment = (children) => setChildren(document.createDocumentFragment(), children);
+
+
+export const setObj = ( {storage, key, data} ) =>
 {
-    Reflect.set( acc, k, acc[k] )
-    return acc
-    
-}, is['string']( key ) ? target[key] : target )
+        // Reflect.set( storage[key], data, tempData )
+}
 
 
-const renderTo = ( target, children = [] ) =>
+export const renderTo = ( target, children = [] ) =>
 {
     const root = el.id( target )
     root.innerHTML = ''
