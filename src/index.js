@@ -103,6 +103,40 @@ const init = ( store ) =>
                     tileGroup( Rects( 0, -1, [], width ) )
                 ] )
         ] )
+    
+    const keyInput = e =>
+    {
+        console.log(e.keyCode)
+        switch ( e.keyCode )
+        {
+            case 37:
+                //left
+                e.preventDefault()
+                break;
+            case 38:
+                //up
+                e.preventDefault()
+                break;
+            case 39:
+                //right
+                e.preventDefault()
+                break;
+            case 40:
+                //down
+                e.preventDefault()
+                break;
+            case 32:
+                //space - pause
+                e.preventDefault()
+                break;
+            case 27:
+                //esc stop
+                e.preventDefault()
+                break;
+        }
+    }
+
+    document.addEventListener('keydown', keyInput)
 
     
     main.appendChild(svgg)
