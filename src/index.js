@@ -1,146 +1,71 @@
-import {el, is, setAttr, updateChildren, element, fragment, renderTo,} from './utils.js'
-import {Action} from './lib.js'
-
-
+import {el, pipe, is, element, fragment,setAttr}  from './utils.js'
+    
+const main = el.id( 'main' )
 const svg = element('svg')
-// 업데이트 필요함
-const randomPosition = ( {trap, apple} ) =>
-{
-    const tiles = 25
-    const random = ( num ) => Math.floor( Math.random() * num )
-    const positions = [trap, apple]
-    const repositioned = positions.map( ( position, i ) =>
-    {
-        const randomX = random( tiles )
-        const randomY = random( tiles - 10 )
-        console.log( randomX, randomY )
-        if ( position[0] !== randomY || position[1] !== randomX ) return [randomY, randomX]
-        else return position
-    } )
+const html = element('html')
 
-    return ({trapP:repositioned[0], appleP:repositioned[1]})
+const svgBg = svg('svg' )
+const group = svg( 'g' )
+const bg = svg('rect')
+const user = svg('circle',)
+
+const moveTo = target => ( y, x ) =>
+{
+    // const {layer}
+    const cx = Number(target.getAttribute('cx'))
+    const cy = Number( target.getAttribute( 'cy' ) )
+    const ratio = direction => direction === 'x'? cx/1400 * 100 : cy/1000 *100
+    // console.log(target,a)
+    setAttr( 'svg',target, {cx: cx+x*ratio('x'), cy: cy+y*ratio('y')} )
+    // return ({cx,cy})
 }
 
-
-const play = ( store ) => new Promise( ( res ) =>
+const keyInput = store => e =>
 {
-    const {trapP, appleP} = randomPosition( {trap: [4,10], apple:[10,5]} )
-
-
-    const trapS =  el.id( `square-${trapP[0]}-${trapP[1]}` )
-    const appleS = el.id( `square-${appleP[0]}-${appleP[1]}` )
-    // svg 요소간 비교 true, false
-    // console.log(trapS === trapS, trapS === appleS)
-    return res({trapS, appleS, store: {}})
-})
-   
-const setColor = ( {trapS, appleS, store} ) => new Promise
-    ((res,rej) => {
-
-    console.log(trapS,appleS)
-
-        if ( trapS && appleS )
-        {
-            setAttr( 'svg', trapS, {'fill': 'black'} )
-            setAttr( 'svg', appleS, {'fill': 'yellow'} )
-        
-            return res( {store} )
-        } 
-    
-})
-
-const finalRender = ( {store} ) => ( parent, childGroup ) => new Promise(res =>
-{
-    console.log(parent)
-    parent.appendChild( childGroup )
-    return parent
-    
-})
-//출력성공
-
-const renderTiles = ( store ) =>
-{
-    const {trapP, appleP} = randomPosition( {trap: [3, 12], apple: [20, 5]} )
-    const {width, height} = document.getClient
-    const rect = svg('rect',{width:25,height:25, fill: 'red', stroke: 'white'})
-    
-}
-
-const init = ( store ) => 
-{
-    const main = el.id( 'main' )
-    const {width, height} = main.getBoundingClientRect()
-    const svgRoot = svg( 'svg', {id: 'svg-root', } )
-    const group = svg( 'g', {id: 'tiles-group'} )
-    const rect = svg( 'rect' )
-    const Rects = ( iX, iY, arr, width, height ) =>
+    const _ = {...store}
+    const circle = el.id( 'user' )
+    const move = moveTo(circle)
+    console.log( e.keyCode )
+    console.log(_.velo)
+    switch ( e.keyCode )
     {
-        const tiles = 25
-
-        if ( iY > tiles - 10 )
-        {
-            return arr
-        }
-        else if ( iX > tiles )
-        {
-            iX = 0, iY++
-            return Rects( 0, iY, arr, width )
-
-        }
-        const x = width / tiles * iX
-        const y = width / tiles * iY
-        const square = rect( {name: 'square', id: `square-${iY}-${iX}`, width: width / tiles, height: width / tiles, x, y, fill: 'red', stroke: 'white'} )
-        arr.push( square )
-
-        return Rects( iX + 1, iY, arr, width )
-    }
-    const tileGroup = children => group( {id: 'tile-group'}, [...children] )
-
-    const svgg = svgRoot( {visibility: 'visible', width, height},
-        [
-            group(
-                [
-                    tileGroup( Rects( 0, -1, [], width ) )
-                ] )
-        ] )
-    
-    const keyInput = e =>
-    {
-        console.log(e.keyCode)
-        switch ( e.keyCode )
-        {
-            case 37:
-                //left
-                e.preventDefault()
-                break;
-            case 38:
-                //up
-                e.preventDefault()
-                break;
-            case 39:
-                //right
-                e.preventDefault()
-                break;
-            case 40:
-                //down
-                e.preventDefault()
-                break;
-            case 32:
-                //space - pause
-                e.preventDefault()
-                break;
-            case 27:
-                //esc stop
-                e.preventDefault()
-                break;
-        }
+        case 37:
+            //left [y,-1]
+            move(0,-1)
+            break;
+        case 38:
+            //up [-1,0]
+            move(-1,0)
+            break;
+        case 39:
+            //right [y,1]
+            move( 0, 1 )
+            // e.preventDefault()
+            break;
+        case 40:
+            //down [1, x]
+            move(1,0)
+            break;
+        case 32:
+            //space - resize
+            break;
+        case 27:
+            //esc stop
+            break;
     }
 
-    document.addEventListener('keydown', keyInput)
-
-    
-    main.appendChild(svgg)
+    return e.keyCode
 }
-    
 
-init({})
+const store = {velo:[1,0]}
+document.addEventListener('keydown', keyInput(store))
+
+
+console.log( main,svgBg )
+
+main.appendChild(
+    svgBg( {id: 'svg-root', width: 1400, height: 1000}, [
+        group( [
+            bg( {id: 'background', width: 1400, height: 1000, fill: 'black'} ),
+            user( {id: 'user', cx: 1400/2, cy: 1000/2, r: 50, fill: 'white'} )
+        ])] ) )

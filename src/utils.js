@@ -3,7 +3,7 @@ import {Is} from './lib.js'
 const id = id => document.getElementById( id )
 const name = name => document.getElementsByName( name )
 
-const pipe = ( initData, ...fns ) =>
+export const pipe = ( initData, ...fns ) =>
     fns.reduce( ( returned, fn ) => fn( returned ), initData )
     
 export const el = {id,name}
@@ -31,8 +31,6 @@ export const setAttr = (type, el, attr ) =>
     {
         return attributes.reduce( ( acc, [key, val] ) =>
         {
-    console.log(key,val)
-    
             if ( key === 'text' )
             {
               acc.appendChild(document.createTextNode(val))  
@@ -53,6 +51,7 @@ export const removeChildren = parent =>
     return parent
 }
 
+
 export const updateChildren = ( type, parent, children = [] ) =>
 {
     if ( is['undefined']( children ) ) return parent
@@ -65,6 +64,8 @@ export const updateChildren = ( type, parent, children = [] ) =>
     return parent
     
 }
+
+
 
 export const createElement =  type  => ( tag, attr = {}, children=[] ) =>
 {
@@ -85,6 +86,7 @@ export const element = type => tag => ( attr ={}, children=[] ) =>
     const elByType = createElement( type )
     return isChildren( attr ) ? elByType( tag, {},attr) : elByType(tag,attr,children)
 }
+
 
 export const fragment = (children) => setChildren(document.createDocumentFragment(), children);
 
