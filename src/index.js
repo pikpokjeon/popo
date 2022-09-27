@@ -1,5 +1,6 @@
-import {el, pipe, is, element, fragment,setAttr}  from './utils.js'
-    
+import {el, pipe, is, }  from './utils.js'
+import {element, fragment,setAttr}    from './lib.js'
+
 const main = el.id( 'main' )
 const svg = element('svg')
 const html = element('html')
@@ -19,6 +20,14 @@ const moveTo = target => ( y, x ) =>
     setAttr( 'svg',target, {cx: cx+x*ratio('x'), cy: cy+y*ratio('y')} )
     // return ({cx,cy})
 }
+
+const resize = e =>
+{
+    const {width, height} = main.getBoundingClientRect()
+    console.log( 'w', width, 'h', height )
+    console.log('e',e)
+}
+
 
 const keyInput = store => e =>
 {
@@ -48,9 +57,10 @@ const keyInput = store => e =>
             break;
         case 32:
             //space - resize
+            
             break;
-        case 27:
-            //esc stop
+        case 13:
+
             break;
     }
 
@@ -59,13 +69,12 @@ const keyInput = store => e =>
 
 const store = {velo:[1,0]}
 document.addEventListener('keydown', keyInput(store))
-
+window.addEventListener('resize', resize)
 
 console.log( main,svgBg )
-
 main.appendChild(
-    svgBg( {id: 'svg-root', width: 1400, height: 1000}, [
+    svgBg( {id: 'svg-root', width: 1400, height: 1000, visibilities:'hidden'}, [
         group( [
             bg( {id: 'background', width: 1400, height: 1000, fill: 'black'} ),
-            user( {id: 'user', cx: 1400/2, cy: 1000/2, r: 50, fill: 'white'} )
-        ])] ) )
+        ]),            user( {id: 'user', cx: 1400/2, cy: 1000/2, r: 50, fill: 'red'} )
+] ) )
