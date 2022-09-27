@@ -3,7 +3,7 @@ import babel from '@rollup/plugin-babel';
 import commonjs from '@rollup/plugin-commonjs';
 
 export default {
-  input: "./src/index.js",
+  input: "./index.js",
   plugins: [nodeResolve(), babel({babelHelpers: 'bundled'}), commonjs()],
   output: [
     {
