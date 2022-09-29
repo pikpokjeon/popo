@@ -91,7 +91,7 @@ export const element = type => tag => ( attr ={}, children=[] ) =>
 }
 
 
-export const fragment = (children) => setChildren(document.createDocumentFragment(), children);
+export const fragment = (children) => appendTo(document.createDocumentFragment()).child(children)
 
 
 export const renderTo = ( target, children = [] ) =>

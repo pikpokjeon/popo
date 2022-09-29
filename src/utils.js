@@ -29,10 +29,3 @@ export const setObj = ( {storage, key, data} ) =>
         // Reflect.set( storage[key], data, tempData )
 }
 
-
-export const renderTo = ( target, children = [] ) =>
-{
-    const root = el.id( target )
-    root.innerHTML = ''
-    updateChildren('',root,children)
-}
