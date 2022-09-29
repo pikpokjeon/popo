@@ -1,8 +1,10 @@
 {
   "name": "popo",
-  "version": "1.0.0",
-  "description": "popo the mini frontend vanila js library to manage DOM and States",
-  "main": "index.js",
+  "version": "0.1.0",
+  "description": "popo the mini frontend vanila js library to manage DOM",
+  "main": "dist/cjs/index.js",
+  "module": "dist/es/index.js",
+  "browser": "dist/umd/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup --config",
@@ -12,8 +14,16 @@
     "type": "git",
     "url": "git+https://github.com/pikpokjeon/popo.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "DOM",
+    "Frontend",
+    "SVG"
+  ],
+  "author": {
+    "name": "pikpokjeon",
+    "email": "pikpokjeon@gmail.com",
+    "url": "https://github.com/pikpokjeon"
+  },
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/pikpokjeon/popo/issues"
@@ -28,7 +38,6 @@
     "rollup": "^2.56.3"
   },
   "dependencies": {
-    "jest": "^29.0.2",
     "parcel": "^2.7.0"
   }
 }

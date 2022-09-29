@@ -1,6 +1,4 @@
-import {Is} from './lib.js'
- 
-const id = id => document.getElementById( id )
+ const id = id => document.getElementById( id )
 const name = name => document.getElementsByName( name )
 
 export const pipe = ( initData, ...fns ) =>
