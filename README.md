@@ -3,6 +3,7 @@ popo the mini frontend vanila js library to manage DOM and States
 https://www.npmjs.com/package/popo-dom
 
 ### [Working on Documentation] -29,sep,2022
+example here => https://github.com/pikpokjeon/calendate-js/blob/main/src/app.js
 ---
 ```javascript
 import {Popo} from 'popo-dom'
