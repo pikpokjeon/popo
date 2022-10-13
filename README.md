@@ -1,10 +1,11 @@
 # popo
 popo the mini frontend vanila js library to manage DOM and States
-https://www.npmjs.com/package/popo-dom
+ https://www.npmjs.com/package/popo-dom
 
 ### [Working on Documentation] -29,sep,2022
-example here => https://github.com/pikpokjeon/calendate-js/blob/main/src/app.js
+ example here => https://github.com/pikpokjeon/calendate-js/blob/main/src/app.js
 ---
+
 ```javascript
 import {Popo} from 'popo-dom'
 
@@ -25,9 +26,7 @@ const Rects = group => {
 
 const RectsGroup = Rects(g)
 
-const svgTree = svgRoot([
-       RectsGroup
-       ])
+const svgTree = svgRoot([ RectsGroup ])
        
 root.appendChild(svgTree)
 ```
@@ -44,8 +43,9 @@ const box = HTML('section')
 
 //3. append it like a tree
 const htmlTree = box({text:'MessageBox'}, [
-  Array(3).fill(-1).map( (mb,i) => messageBox({text:'mesaage received'},
-  [ message({text: `message:${i} message`]
+   Array(3).fill(-1).map( (mb,i) => 
+   messageBox({text:'mesaage received'}, [
+     message({text: `message:${i} message`]
   ] )
  
 
