@@ -12,23 +12,30 @@ const header = HTML('header')
 const article = HTML('article')
 const footer = HTML( 'footer' )
 const codeBlock = HTML( 'code' )
-
-const mainRoot = el.id( 'main' )
-
 const span = HTML('span') 
 const p = HTML( 'p' )
 const code = HTML( 'code' )
 const strong = HTML('strong')
 
-const subjectSection = ( subject, articles ) =>
-    section( {class: `section`, id: `section-${subject}`}, [
-        header( {class: 'sub-header', text: subject} ),
-        div( {class: 'sub-articles-wrapper'}, [...articles] ),
-        footer( {class: 'sub-footer'}, [
-            div({class:'sub-footer-info',text: 'sub-footer-info'})
-        ])
+const subjectSections = ( subject, articles ) =>
+{
+    const storage = {[subject]: [...articles]}
     
-] )
+    const tree = subject =>
+        section( {class: `section`, id: `section-${subject}`}, [
+            header( {class: 'sub-header', text: subject} ),
+            div( {class: 'sub-articles-wrapper'}, [
+                ...storage[subject].map((article,idx) => subjectArticle(subject,article,idx))] ),
+            footer( {class: 'sub-footer'}, [
+                div( {class: 'sub-footer-info', text: 'sub-footer-info'} )
+            ] )
+        ] )
+    
+    return tree(subject)
+}
+
+const subjectArticle = (subject, articleCode, idx ) =>
+    article( {class: `article`, id: `article-${subject}-${idx}`,text:articleCode} )
 
 // TODO!! 파싱
 // - / 개행
@@ -36,11 +43,23 @@ const subjectSection = ( subject, articles ) =>
 // - - 리스트
 // - ``` ``` 코드블락
 // - * * 볼드체
-// - h3 h3 h1~h5 글자크기
-const genArticleCode = article =>
+// - # # 부제목
+const ifHasStr = str => target => str.indexOf( target ) > -1
+
+const genCodeblockFromStr = str =>
 {
-    
+    const has = ifHasStr( str )
+    let _str = ''
+    if ( has( '---' ) )
+    {
+        str.split('---')
+    }
 }
-const sectionArticle = ( subject, idx ) => article => article( {class: `section-article`, id: `article-${subject}-${idx}`}, [
-    
-])
+
+
+const mainRoot = el.id( 'main' )
+
+const a = subjectSections( 'title', ['<h2>hello</h2>', '<h3>hello2</h3>'] ) 
+
+mainRoot.appendChild(a)
+console.log(a)
