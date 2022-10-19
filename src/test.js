@@ -55,12 +55,12 @@ const subjectArticle = ( subject, articleCode, idx ) =>
 const ifHasStr = str => target => str.indexOf( target ) > -1
 
 
-const splitOrder = [['---'], ['```', '```'], ['>'], ['#h3'], ['->'], ['/'], ['*', '*']]
+const splitOrder = [['---'], ['```', '```'], ['>'], ['#h3'], ['->'], ['/'], ['*', '*'], ["**", "**"]]
 
 // key : {code,parent ...}
-const tag = (initExtendTags = {}) =>
+const tag = ( initExtendTags = {} ) =>
 {
-    const fontSize = {...Array( 4 ).fill( 1 ).reduce( ( acc, cur,i ) => ( {...acc,[`h${i + 1}`]: {name: `h${i + 1}`}} ),{} )}
+    const fontSize = {...Array( 4 ).fill( 1 ).reduce( ( acc, cur, i ) => ( {...acc, [`#h${i + 1}`]: {code: `h${i + 1}`}} ), {} )}
     let storage = {
         '---': {
             code: 'br',
@@ -84,16 +84,79 @@ const tag = (initExtendTags = {}) =>
         },
         ...initExtendTags
     }
-    const changeCode = ( {symbol, code} ) => 
+    const changeTags = ( {symbol, key, val} ) => 
     {
-        Reflect.set( storage, symbol.code, code )    
-        console.log(storage)
+        Reflect.set( storage, symbol, {[key]: val} )
     }
 
-    console.log(storage)    
+    // [0] - open, [1] - close
+    const setCloseTag = ( {symbolArry} ) =>
+    {
+        storage = symbolArry.reduce( ( acc, cur, i ) =>
+        {
+            const [open, close] = [cur[0], cur[1] ?? false]
+            if ( !acc[open] ) acc[open] = {close}
+            Reflect.set( acc[open], 'close', close )
+            return acc
+        }, storage )
+    }
+    // key: 'symbol', val: '>>>'
+    // key: 'code' val: 'li'
+    // key: 'close',
+    // key: 'close', val: '*'
+    // key: 'close', val: ['*','*']]
+    const get = ( {key, val} ) =>
+    {
+        let selectedTag = {}
+        val = is['array']( val ) ? [...val] : [val]
+        const filtered = key === 'symbol' ? storage[val[0]] : Object.entries( storage ).filter( ([k,info],i,arr) =>
+        {
+        console.log( 'k>>>>[     ',k,'    ]info>>>>>>    [',info, '    ]------key>>>>>>[    ',key, '    ]------val>>>>>    [',val,']')
+            console.log(info[key],storage[k][key])
+            if ( info[key] === storage[k][key] )
+            {
+                
+                selectedTag = {[val[0]]: {...info}}
+                return true
+            } else if ( info[key] === val[0])
+            {
+                return true
+            }
+            return false
+
+        })
+
+
+
+        console.log('filtered>>>>>',filtered)
+        console.log( 'selectedTag', selectedTag )
+        console.log('-----------------------------------------')
+    }
+
+    console.log( '[Storage]', storage )
+
+    return {changeTags, setCloseTag, get}
 }
 
-tag()
+const T = tag()
+T.changeTags( {symbol: '#h4', key: 'code', val: 'abbr'} )
+T.changeTags( {symbol: '```', key: 'code', val: 'blockquote'} )
+T.changeTags( {symbol: '>>>', key: 'parent', val: 'div'} )
+T.setCloseTag( {symbolArry: splitOrder} )
+// key: 'symbol', val: '>>>'
+// key: 'code' val: 'li'
+// key: 'close',
+// key: 'close', val: '*'
+// key: 'close', val: ['*','*']]
+T.get( {key: 'symbol', val: '>>>'} )
+T.get( {key: 'code', val: 'blockquote'} )
+T.get( {key: 'close'} )
+T.get( {key: 'close', val: '*'} )
+T.get( {key: 'close', val: ['*', '*']} )
+
+
+
+
 const genCodeblockFromStr = ( str, arr = [] ) =>
 {
     const HTML = Popo.element( 'html' )
