@@ -716,10 +716,20 @@ const tag = (symbolArry)=>{
         return Object.assign({}, storage[symbol]);
     };
     const getAll = ()=>Object.assign({}, storage);
+    const setMemo = ()=>{
+        for (const [symbol, data] of Object.entries(storage)){
+            if (data.memo && is["array"](data.memo)) continue;
+            else if (data.close || !data.close && data.text) Reflect.set(storage[symbol], memo, []);
+        }
+    };
+    // open- close 태그에 메모이제이션 (상태) 추가
+    // text 입력 가능 태그에, 현재 스트링값 contents 추가
+    // 위 두 항목 앨리먼트 생성시 초기화
     return {
         changeTags,
         get,
-        getAll
+        getAll,
+        setMemo
     };
 };
 const test1 = `/-- h3# tttttt  --- ee * strong *  eefdsf
