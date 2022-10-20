@@ -22,6 +22,8 @@ const ul = HTML( 'ul' )
 const li = HTML( 'li' )
 const bold = HTML( 'strong' )
 const subTitle = HTML( 'h3' )
+
+
 const subjectSections = ( subject, articles ) =>
 {
     const storage = {[subject]: [...articles]}
@@ -42,47 +44,42 @@ const subjectSections = ( subject, articles ) =>
 const subjectArticle = ( subject, articleCode, idx ) =>
     article( {class: `article`, id: `article-${subject}-${idx}`, text: articleCode} )
 
-// TODO!! 파싱
-// - --- 새로운 부분        1
-// - # # 부제목 h3
-
-// - / 개행
-// - -> 리스트               2
-// - ``` ``` 코드블락       3
-// - * * 볼드체
-// - > < 노티박스
-
-const ifHasStr = str => target => str.indexOf( target ) > -1
 
 
-const splitOrder = [['---'], ['```', '```'], ['>'], ['#h3'], ['->'], ['/'], ['*', '*'], ["**", "**"]]
+const splitOrder = [['/--', '--/'], ['---'], ['```', '```'], ['>'], ['h3#'], ['->'], ['/'], ['*', '*']]
 
 // key : {code,parent ...}
-const tag = ( initExtendTags = {} ) =>
+const tag = ( symbolArry ) =>
 {
-    const fontSize = {...Array( 4 ).fill( 1 ).reduce( ( acc, cur, i ) => ( {...acc, [`#h${i + 1}`]: {code: `h${i + 1}`}} ), {} )}
+    const fontSize = {...Array( 4 ).fill( 1 ).reduce( ( acc, cur, i ) => ( {...acc, [`h${i + 1}#`]: {code: `h${i + 1}`, text: true, close: false}} ), {} )}
     let storage = {
-        '---': {
-            code: 'br',
+        '/--': {
+            code: 'div',
+            text: true,
+            class: 'article'
         },
         '```': {
             code: 'code',
+            text: true,
         },
         '>': {
-            code: 'blockquote'
+            code: 'blockquote',
+            text: true,
         },
         ...fontSize,
         '->': {
             code: 'li',
-            parent: 'ul'
+            parent: 'ul',
+            text: true
         },
-        '/': {
-            code: '\n'
+        '---': {
+            code: 'br',
+            text: false,
         },
         '*': {
-            code: 'strong'
+            code: 'strong',
+            text: true
         },
-        ...initExtendTags
     }
     const changeTags = ( {symbol, key, val} ) => 
     {
@@ -90,124 +87,103 @@ const tag = ( initExtendTags = {} ) =>
     }
 
     // [0] - open, [1] - close
-    const setCloseTag = ( {symbolArry} ) =>
+    const setCloseTag = ( arr ) =>
     {
-        storage = symbolArry.reduce( ( acc, cur, i ) =>
+        storage = [...arr].reduce( ( acc, cur, i ) =>
         {
             const [open, close] = [cur[0], cur[1] ?? false]
-            if ( !acc[open] ) acc[open] = {close}
+            if ( !acc[open] ) acc[open] = {close, text: false}
             Reflect.set( acc[open], 'close', close )
+            Reflect.set( acc[open], 'text', close ? true : false )
             return acc
         }, storage )
+        return storage
     }
+    if ( symbolArry.length > 0 ) setCloseTag( symbolArry )
     // key: 'symbol', val: '>>>'
     // key: 'code' val: 'li'
     // key: 'close',
     // key: 'close', val: '*'
     // key: 'close', val: ['*','*']]
-    const get = ( {key, val} ) =>
+    const get = ( symbol ) =>
     {
-        let selectedTag = {}
-        val = is['array']( val ) ? [...val] : [val]
-        const filtered = key === 'symbol' ? storage[val[0]] : Object.entries( storage ).filter( ([k,info],i,arr) =>
-        {
-        console.log( 'k>>>>[     ',k,'    ]info>>>>>>    [',info, '    ]------key>>>>>>[    ',key, '    ]------val>>>>>    [',val,']')
-            console.log(info[key],storage[k][key])
-            if ( info[key] === storage[k][key] )
-            {
-                
-                selectedTag = {[val[0]]: {...info}}
-                return true
-            } else if ( info[key] === val[0])
-            {
-                return true
-            }
-            return false
-
-        })
-
-
-
-        console.log('filtered>>>>>',filtered)
-        console.log( 'selectedTag', selectedTag )
-        console.log('-----------------------------------------')
+        return Object.assign( {}, storage[symbol] )
     }
+    const getAll = () => Object.assign( {}, storage )
 
-    console.log( '[Storage]', storage )
 
-    return {changeTags, setCloseTag, get}
+    return {changeTags, get, getAll}
 }
 
-const T = tag()
-T.changeTags( {symbol: '#h4', key: 'code', val: 'abbr'} )
-T.changeTags( {symbol: '```', key: 'code', val: 'blockquote'} )
-T.changeTags( {symbol: '>>>', key: 'parent', val: 'div'} )
-T.setCloseTag( {symbolArry: splitOrder} )
-// key: 'symbol', val: '>>>'
-// key: 'code' val: 'li'
-// key: 'close',
-// key: 'close', val: '*'
-// key: 'close', val: ['*','*']]
-T.get( {key: 'symbol', val: '>>>'} )
-T.get( {key: 'code', val: 'blockquote'} )
-T.get( {key: 'close'} )
-T.get( {key: 'close', val: '*'} )
-T.get( {key: 'close', val: ['*', '*']} )
+
+const test1 = `/-- h3# tttttt  --- ee * strong *  eefdsf
+-> 1,dd 
+-> 2.dff 
+-> 3.ffff 
+fdsfsdfdfsdf 
+--/ 
+/--
+h3# codefdfdf ---
+${"``` <div>backtick</div> ```"}
+dfdfsfdf s 
+> ! dfdfsfdff --/
+`
+// {div:[{id:'div-1',class:'box',children:[],parentID: ''}]}
+const hasTagIn = str => tag => str.includes( tag )
+const hasTagIdx = strArr => tag => strArr.indexOf( tag )
 
 
 
-
-const genCodeblockFromStr = ( str, arr = [] ) =>
+const handleTyping = ( {initTag, typing} ) =>
 {
-    const HTML = Popo.element( 'html' )
-    const has = ifHasStr( str )
-    let _str = str
-    const ordered = {}
 
+    const elementStorage = {}
 
-    //가장 큰 단위에서 부터 
-    const process = ( order ) => 
+    const splitByUnit = unit => splitStr( {typing, storage: elementStorage, splitUnit:unit,tag} )
+
+    return {splitByUnit}
+
+}
+
+//문자열 우선순위따라 태그로 나누기
+const splitStr = ( {typing, storage, splitUnit,tag} ) => 
+{
+    const hasTag = ( allStr ) => hasTagIn( allStr )
+    let splitedTyping = typing.split( splitUnit )
+    console.log(splitedTyping)
+    // 전체 문자열 개행으로 나누기
+    return splitedTyping.reduce( ( acc, newline, i, s ) =>
     {
-        const splited = order.reduce( ( acc, cur, i ) =>
-        {
-            if ( cur.length === 1 )
-            {
-                if ( !acc[i] ) acc[i] = []
-                const s = split( _str, cur ).join( ' ' )
-                _str = s
-                return acc
-            } else
-            {
-                const [start, end] = [cur[0], cur[1]]
-            }
-            order.shift()
-            return acc
+        let {close, text, code} = -1
 
-        }, ordered )
+        readNewline( {tag, newline, storage, hasTag: hasTag( splitedTyping.join( splitUnit ) )} )
 
-        return _str
-    }
-
-    const split = ( str, next, end ) =>
-    {
-        return str.split( next )
-    }
+        i
+    }, storage )
 
 
-    return {process}
 }
 
 
-const mainRoot = el.id( 'main' )
+const readNewline = ( {tag, newline, storage, hasTag} ) =>
+{
+    let splited = newline.trim().split( ' ' ).filter( s => s !== '' )
+    console.log( '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6' )
+    console.log( '[newline]', newline )
+    console.log( '[splited]', splited )
 
-const a = subjectSections( 'title', ['hello --- -> item1 -> item2 -> *item3* -> item4 --- # #Bye#', '<h3>hello2</h3>'] )
+    // 게헹을 기준으로 나뉘어진 문자열 띄어쓰기로 나누기
+    splited.reduce( ( _acc, _word, _i, _s ) =>
+    {
+       
+    }, storage )
 
-mainRoot.appendChild( a )
+    return storage
+}
 
-const arr = ['hello --- -> / item1 -> / item2 -> / * item3 * -> item4 --- -> / # Bye #',
-    '<h3> / hello2 / </h3> --- # yiylr3 #',
-    'fsdfsdf - 1.ss',
-    '# start # / ``` <div class="red">notice <span>!!!</span></div> ``` / > # result # / -> 1,aaaa -> 2,dddd <']
-const b = arr.map( str => genCodeblockFromStr( str, [] ).process( splitOrder ) )
-console.log( a )
-console.log( b )
+
+const initTagData = tag( splitOrder )
+
+const splitedTypings = handleTyping( {initTagData, typing: test1, } ).splitByUnit('\n')
+
+
