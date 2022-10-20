@@ -687,7 +687,32 @@ const tag = (symbolArry)=>{
     // key: 'close',
     // key: 'close', val: '*'
     // key: 'close', val: ['*','*']]
-    const get = (symbol)=>{
+    const get = ({ symbol  })=>{
+        let selectedTag = -1;
+        let selectedIdx = -1;
+        const checkIfCloseSymbol = (symbol)=>{
+            const hasTag = Object.entries(storage).filter(([s, info], i)=>{
+                if (info.close === symbol) {
+                    selectedIdx = i;
+                    selectedTag = s;
+                    return true;
+                }
+                return false;
+            });
+            console.log(hasTag);
+            return hasTag.length > 0 ? true : false;
+        };
+        // parent -> 상위 루트 open code (예 div) close -> 상위 루트 부모코드 닫힘 여부,
+        // text -> 현재 symbol
+        if (!storage[symbol]) {
+            if (checkIfCloseSymbol(symbol)) //true
+            return Object.assign({}, storage[selectedTag]);
+            return {
+                code: "text",
+                text: symbol,
+                close: false
+            };
+        }
         return Object.assign({}, storage[symbol]);
     };
     const getAll = ()=>Object.assign({}, storage);
@@ -708,17 +733,19 @@ h3# codefdfdf ---
 ${"``` <div>backtick</div> ```"}
 dfdfsfdf s 
 > ! dfdfsfdff --/
+
+
 `;
 // {div:[{id:'div-1',class:'box',children:[],parentID: ''}]}
 const hasTagIn = (str)=>(tag)=>str.includes(tag);
-const hasTagIdx = (strArr)=>(tag)=>strArr.indexOf(tag);
+const getTagIdx = (strArr)=>(tag)=>strArr.indexOf(tag);
 const handleTyping = ({ initTag , typing  })=>{
     const elementStorage = {};
     const splitByUnit = (unit)=>splitStr({
             typing,
             storage: elementStorage,
             splitUnit: unit,
-            tag
+            tag: initTag
         });
     return {
         splitByUnit
@@ -726,8 +753,9 @@ const handleTyping = ({ initTag , typing  })=>{
 };
 //문자열 우선순위따라 태그로 나누기
 const splitStr = ({ typing , storage , splitUnit , tag  })=>{
-    const hasTag = (allStr)=>hasTagIn(allStr);
-    let splitedTyping = typing.split(splitUnit);
+    const hasTag = (typings)=>hasTagIn(typings);
+    let splitedTyping = typing.split(splitUnit) //arr
+    ;
     console.log(splitedTyping);
     // 전체 문자열 개행으로 나누기
     return splitedTyping.reduce((acc, newline, i, s)=>{
@@ -738,21 +766,35 @@ const splitStr = ({ typing , storage , splitUnit , tag  })=>{
             storage,
             hasTag: hasTag(splitedTyping.join(splitUnit))
         });
-        i;
+        console.log(newline);
     }, storage);
 };
 const readNewline = ({ tag , newline , storage , hasTag  })=>{
-    let splited = newline.trim().split(" ").filter((s)=>s !== "");
+    let newlineArr = newline.trim().split(" ").filter((s)=>s !== "");
     console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6");
     console.log("[newline]", newline);
-    console.log("[splited]", splited);
-    // 게헹을 기준으로 나뉘어진 문자열 띄어쓰기로 나누기
-    splited.reduce((_acc, _word, _i, _s)=>{}, storage);
+    console.log("[newlineArr]", newlineArr);
+    const tagStorage = tag.getAll();
+    console.log(tagStorage);
+    // 태그인경우
+    // - open-close 형태라면 내부 코드를 추가하며 읽음 -> 닫힘코드가 있는경우 해당 배열 인덱스에서 다음으로
+    // 시작부터 닫힐때까지 상위요소에 해당하는 배열 위치에서 저장
+    // - open일 경우 해당 코드만 부모에 추가
+    // - text인 경우 텍스트 앞 테그가 텍스트를 허용할때까지 추가
+    // 문자열인경우
+    // 텍스트노드로 요소생성
+    newlineArr.reduce((_acc, curStr, _i, _s)=>{
+        const curTag = tag.get({
+            symbol: curStr
+        }) // --/
+        ;
+        console.log("-----[curTag]", curTag);
+    }, storage);
     return storage;
 };
-const initTagData = tag(splitOrder);
+const initTag = tag(splitOrder);
 const splitedTypings = handleTyping({
-    initTagData,
+    initTag,
     typing: test1
 }).splitByUnit("\n");
 
