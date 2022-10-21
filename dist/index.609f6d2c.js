@@ -603,13 +603,12 @@ const splitOrder = [
         ">"
     ],
     [
-        "h3#"
+        "h3#",
+        " "
     ],
     [
+        "->",
         "->"
-    ],
-    [
-        "/"
     ],
     [
         "*",
@@ -624,7 +623,7 @@ const tag = (symbolArry)=>{
                 [`h${i + 1}#`]: {
                     code: `h${i + 1}`,
                     text: true,
-                    close: false
+                    close: true
                 }
             }), {})
     };
@@ -673,15 +672,17 @@ const tag = (symbolArry)=>{
             ];
             if (!acc[open]) acc[open] = {
                 close,
-                text: false
+                text: false,
+                open: ""
             };
+            Reflect.set(acc[open], "open", open);
             Reflect.set(acc[open], "close", close);
             Reflect.set(acc[open], "text", close ? true : false);
             return acc;
         }, storage);
+        initMemo();
         return storage;
     };
-    if (symbolArry.length > 0) setCloseTag(symbolArry);
     // key: 'symbol', val: '>>>'
     // key: 'code' val: 'li'
     // key: 'close',
@@ -716,20 +717,56 @@ const tag = (symbolArry)=>{
         return Object.assign({}, storage[symbol]);
     };
     const getAll = ()=>Object.assign({}, storage);
-    const setMemo = ()=>{
+    const initMemo = ()=>{
         for (const [symbol, data] of Object.entries(storage)){
             if (data.memo && is["array"](data.memo)) continue;
-            else if (data.close || !data.close && data.text) Reflect.set(storage[symbol], memo, []);
+            else if (data.close || !data.close && data.text) Reflect.set(storage[symbol], "memo", []);
         }
+        return storage;
+    };
+    if (symbolArry.length > 0) setCloseTag(symbolArry);
+    // 해당태그의 열림 닫힘을 확인할 수 있어야함
+    const memoOpen = ({ symbol  })=>{
+        const data = storage[symbol] // storage에 등록안된 텍스트 undefine
+        ;
+        console.log("[data] : ", data, symbol);
+        if (!data.memo || !is["array"](data.memo)) initMemo();
+        if (storage[symbol].open) storage[symbol].memo = [
+            ...storage[symbol].memo,
+            [
+                0,
+                -1
+            ]
+        ] // [ open , closed] -1 ,0, 1 
+        ;
+        else if (!data.close && data.text) storage[symbol].memo = [
+            ...storage[symbol].memo,
+            [
+                0,
+                -1
+            ]
+        ];
+        return storage;
     };
     // open- close 태그에 메모이제이션 (상태) 추가
     // text 입력 가능 태그에, 현재 스트링값 contents 추가
     // 위 두 항목 앨리먼트 생성시 초기화
+    const memoClose = ({ symbol  })=>{
+        const curTag = get({
+            symbol
+        }).open;
+        const curMemo = storage[curTag].memo;
+        const len = curMemo.length;
+        if (curMemo[len - 1][0] > -1 && curMemo[len - 1][1] < 0) curMemo[len - 1][1] = 0;
+        return storage;
+    };
     return {
         changeTags,
         get,
         getAll,
-        setMemo
+        initMemo,
+        memoOpen,
+        memoClose
     };
 };
 const test1 = `/-- h3# tttttt  --- ee * strong *  eefdsf
@@ -751,7 +788,7 @@ const hasTagIn = (str)=>(tag)=>str.includes(tag);
 const getTagIdx = (strArr)=>(tag)=>strArr.indexOf(tag);
 const handleTyping = ({ initTag , typing  })=>{
     const elementStorage = {};
-    const splitByUnit = (unit)=>splitStr({
+    const splitByUnit = (unit)=>splitToLines({
             typing,
             storage: elementStorage,
             splitUnit: unit,
@@ -761,8 +798,8 @@ const handleTyping = ({ initTag , typing  })=>{
         splitByUnit
     };
 };
-//문자열 우선순위따라 태그로 나누기
-const splitStr = ({ typing , storage , splitUnit , tag  })=>{
+// 문자열을 나눔
+const splitToLines = ({ typing , storage , splitUnit , tag  })=>{
     const hasTag = (typings)=>hasTagIn(typings);
     let splitedTyping = typing.split(splitUnit) //arr
     ;
@@ -779,7 +816,8 @@ const splitStr = ({ typing , storage , splitUnit , tag  })=>{
         console.log(newline);
     }, storage);
 };
-const readNewline = ({ tag , newline , storage , hasTag  })=>{
+// 나누어진 문자열을 띄움으로 문자열 읽음
+const readNewline = ({ tag , newline , storage  })=>{
     let newlineArr = newline.trim().split(" ").filter((s)=>s !== "");
     console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6");
     console.log("[newline]", newline);
@@ -793,12 +831,16 @@ const readNewline = ({ tag , newline , storage , hasTag  })=>{
     // - text인 경우 텍스트 앞 테그가 텍스트를 허용할때까지 추가
     // 문자열인경우
     // 텍스트노드로 요소생성
+    const order = [];
     newlineArr.reduce((_acc, curStr, _i, _s)=>{
         const curTag = tag.get({
             symbol: curStr
-        }) // --/
+        }) // --/ 와 같은 닫힘이 속한 태그도 가져옴
         ;
-        console.log("-----[curTag]", curTag);
+        console.log("-----[curTag]", curTag, curTag.open);
+        tag.memoOpen({
+            symbol: curTag.open
+        });
     }, storage);
     return storage;
 };
