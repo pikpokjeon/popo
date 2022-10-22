@@ -553,7 +553,7 @@ const li = HTML("li");
 const bold = HTML("strong");
 const subTitle = HTML("h3");
 const subjectSections = (subject, articles)=>{
-    const storage = {
+    const storage1 = {
         [subject]: [
             ...articles
         ]
@@ -569,7 +569,7 @@ const subjectSections = (subject, articles)=>{
             div({
                 class: "sub-articles-wrapper"
             }, [
-                ...storage[subject].map((article, idx)=>subjectArticle(subject, article, idx))
+                ...storage1[subject].map((article, idx)=>subjectArticle(subject, article, idx))
             ]),
             footer({
                 class: "sub-footer"
@@ -587,7 +587,108 @@ const subjectArticle = (subject, articleCode, idx)=>article({
         id: `article-${subject}-${idx}`,
         text: articleCode
     });
-const splitOrder = [
+const TagsIncreasedByNumIter = function*(init = {
+    start: 1,
+    end,
+    code,
+    symbol,
+    _class
+}) {
+    const storage1 = {};
+    let data = {};
+    console.log(init, init.start, init.end);
+    while(init.start <= init.end){
+        if (!storage1[init.start]) storage1[init.start] = {
+            ...init
+        };
+        const register = ({ init  })=>(extend = {
+                curIdx,
+                code,
+                symbol,
+                text
+            })=>{};
+        data = storage1[init.start];
+        console.log(storage1, data);
+        // tagInfo =
+        // {
+        //     code: data.code ?? code, text: data.text, class: data.class,
+        //     open: `$${data.init.start ?? init.start}${data.keyword ?? keyword}${data.symbol ?? symbol}`
+        // }
+        init.start++;
+    }
+    console.log(data, storage1);
+    Reflect.set(storage1, init.start, data);
+};
+// h4 h3 h2 h1===과 같은 태그를 위한 정보객체 생성기
+// 필수 인자 - 키워드h 숫자 시작과 끝, 스탭, 심볼 h1#
+const genMultiTags = ({ start =1 , end: end1 , step =1 , keyword , symbol: symbol1  })=>{
+    const genTagsCollection = ({ IdxtoStop , curIdx: curIdx1 = 0 , obj ={}  })=>{
+        // 9, 8 => 9+2, 9 -> IdxtoStop + step > end / 7, 8
+        console.log(IdxtoStop, curIdx1, obj);
+        // 현재 인덱스가 마지막보다 크거나 다음에 멈출 인덱스가 마지막보다 크면 정지
+        if (curIdx1 > end1 || IdxtoStop > end1) return obj;
+        // 현재 인덱스가 멈출 인덱스보다 작으면 + 1
+        if (curIdx1 < IdxtoStop) return genTagsCollection({
+            IdxtoStop,
+            curIdx: curIdx1 + 1,
+            obj
+        });
+        // 멈출 인덱스가 현재 인덱스와 같고, 다음에 멈출 인덱스가 마지막보다 작은경우'  
+        if (IdxtoStop === curIdx1 && IdxtoStop + step <= end1) return genTagsCollection({
+            IdxtoStop: IdxtoStop + step,
+            curIdx: curIdx1 + step,
+            obj
+        });
+        return genTagsCollection({
+            IdxtoStop,
+            curIdx: curIdx1 + 1,
+            obj
+        });
+    };
+    let cur = start;
+    return genTagsCollection({
+        IdxtoStop: cur,
+        curIdx: cur
+    });
+};
+const a = genMultiTags({
+    start: 5,
+    end: 9,
+    step: 2,
+    keyword: "h",
+    symbol: "#"
+}) // 5,7,9
+;
+const b = genMultiTags({
+    start: 1,
+    end: 9,
+    step: 3,
+    keyword: "h",
+    symbol: "#"
+}) // 1, 4, 7
+;
+const c = genMultiTags({
+    start: 1,
+    end: 13,
+    step: 4,
+    keyword: "h",
+    symbol: "#"
+}) // 1, 5, 9, 13
+;
+console.log(a);
+console.log(b);
+const TagInfoFrame = ({ num ,  })=>({
+        ...Array(4).fill(1).reduce((acc, cur, i)=>({
+                ...acc,
+                [`h${i + 1}#`]: {
+                    code: `h${i + 1}`,
+                    text: true,
+                    close: true,
+                    children: []
+                }
+            }), {})
+    });
+const pairOfTags = [
     [
         "/--",
         "--/"
@@ -615,49 +716,39 @@ const splitOrder = [
         "*"
     ]
 ];
+const customTags = {
+    "/--": {
+        code: "div",
+        text: true,
+        class: "article"
+    },
+    "```": {
+        code: "code",
+        text: true
+    },
+    ">": {
+        code: "blockquote",
+        text: true
+    },
+    ...TagsIncreasedByNumIter,
+    "->": {
+        code: "li",
+        parent: "ul",
+        text: true
+    },
+    "---": {
+        code: "br",
+        text: false
+    },
+    "*": {
+        code: "strong",
+        text: true
+    }
+};
 // key : {code,parent ...}
 const tag = (symbolArry)=>{
-    const fontSize = {
-        ...Array(4).fill(1).reduce((acc, cur, i)=>({
-                ...acc,
-                [`h${i + 1}#`]: {
-                    code: `h${i + 1}`,
-                    text: true,
-                    close: true
-                }
-            }), {})
-    };
-    let storage = {
-        "/--": {
-            code: "div",
-            text: true,
-            class: "article"
-        },
-        "```": {
-            code: "code",
-            text: true
-        },
-        ">": {
-            code: "blockquote",
-            text: true
-        },
-        ...fontSize,
-        "->": {
-            code: "li",
-            parent: "ul",
-            text: true
-        },
-        "---": {
-            code: "br",
-            text: false
-        },
-        "*": {
-            code: "strong",
-            text: true
-        }
-    };
-    const changeTags = ({ symbol , key , val  })=>{
-        Reflect.set(storage, symbol, {
+    const changeTags = ({ symbol: symbol1 , key , val  })=>{
+        Reflect.set(storage, symbol1, {
             [key]: val
         });
     };
@@ -688,12 +779,21 @@ const tag = (symbolArry)=>{
     // key: 'close',
     // key: 'close', val: '*'
     // key: 'close', val: ['*','*']]
-    const get = ({ symbol  })=>{
-        let selectedTag = -1;
+    const generatedTextTag = ({ text: text1 , root , parent  })=>({
+            code: "text",
+            text: false,
+            root: root,
+            parent: "",
+            content: [
+                ...storage[parent].children,
+                text1
+            ]
+        });
+    const get = ({ symbol: symbol1  })=>{
         let selectedIdx = -1;
-        const checkIfCloseSymbol = (symbol)=>{
+        const checkIfCloseTag = (symbol1)=>{
             const hasTag = Object.entries(storage).filter(([s, info], i)=>{
-                if (info.close === symbol) {
+                if (info.close === symbol1) {
                     selectedIdx = i;
                     selectedTag = s;
                     return true;
@@ -705,55 +805,67 @@ const tag = (symbolArry)=>{
         };
         // parent -> 상위 루트 open code (예 div) close -> 상위 루트 부모코드 닫힘 여부,
         // text -> 현재 symbol
-        if (!storage[symbol]) {
-            if (checkIfCloseSymbol(symbol)) //true
+        if (!storage[symbol1]) {
+            if (checkIfCloseTag(symbol1)) //true
             return Object.assign({}, storage[selectedTag]);
-            return {
-                code: "text",
-                text: symbol,
-                close: false
-            };
+        // text default parent -? 'p'
         }
-        return Object.assign({}, storage[symbol]);
+        return Object.assign({}, storage[symbol1]);
     };
     const getAll = ()=>Object.assign({}, storage);
     const initMemo = ()=>{
-        for (const [symbol, data] of Object.entries(storage)){
+        for (const [symbol1, data] of Object.entries(storage)){
             if (data.memo && is["array"](data.memo)) continue;
-            else if (data.close || !data.close && data.text) Reflect.set(storage[symbol], "memo", []);
+            else if (data.close || !data.close && data.text) Reflect.set(storage[symbol1], "memo", []);
         }
         return storage;
     };
     if (symbolArry.length > 0) setCloseTag(symbolArry);
     // 해당태그의 열림 닫힘을 확인할 수 있어야함
-    const memoOpen = ({ symbol  })=>{
-        const data = storage[symbol] // storage에 등록안된 텍스트 undefine
+    let parentQ = [];
+    let prevSymbol = "";
+    let textContent = [];
+    let byOrder = [];
+    const memoOpen = ({ symbol: symbol1  })=>{
+        const data = storage[symbol1] // storage에 
         ;
-        console.log("[data] : ", data, symbol);
-        if (!data.memo || !is["array"](data.memo)) initMemo();
-        if (storage[symbol].open) storage[symbol].memo = [
-            ...storage[symbol].memo,
+        //등록안된 텍스트 undefine
+        console.log("[data] : ", data, symbol1);
+        // 일반 자식 텍스트인 경우
+        if (!data) {
+            console.log("[parentQ]", parentQ, "[prev]", prevSymbol, "[text]", symbol1);
+            return storage;
+        } else if (!data.memo || !is["array"](data.memo)) initMemo();
+        else if (storage[symbol1].open) storage[symbol1].memo = [
+            ...storage[symbol1].memo,
             [
                 0,
                 -1
             ]
         ] // [ open , closed] -1 ,0, 1 
         ;
-        else if (!data.close && data.text) storage[symbol].memo = [
-            ...storage[symbol].memo,
+        else if (!data.close && data.text) storage[symbol1].memo = [
+            ...storage[symbol1].memo,
             [
                 0,
                 -1
             ]
         ];
+        if (data.text) {
+            prevSymbol = symbol1;
+            parentQ.push(symbol1);
+            byOrder.push(data.code);
+            if (!storage[symbol1].children) storage[symbol1].children = [];
+        } else if (!data.text) parentQ.pop();
+        console.log("[parentQ]", parentQ, "[prev]", prevSymbol, "[cur]", symbol1, data);
         return storage;
     };
     // open- close 태그에 메모이제이션 (상태) 추가
     // text 입력 가능 태그에, 현재 스트링값 contents 추가
     // 위 두 항목 앨리먼트 생성시 초기화
-    const memoClose = ({ symbol  })=>{
+    const memoClose = ({ symbol: symbol1  })=>{
         const curTag = get({
-            symbol
+            symbol: symbol1
         }).open;
         const curMemo = storage[curTag].memo;
         const len = curMemo.length;
@@ -769,17 +881,20 @@ const tag = (symbolArry)=>{
         memoClose
     };
 };
-const test1 = `/-- h3# tttttt  --- ee * strong *  eefdsf
--> 1,dd 
--> 2.dff 
--> 3.ffff 
-fdsfsdfdfsdf 
+const test1 = `/-- h1# Title 제목제목 --- 대략적인 설명입니다 --- 발표인 * name *  날짜: 2022 ---
+h3# <Index>
+-> 1. markdown
+-> 2. parsing
+-> 3. HTML DOM
+additional
 --/ 
 /--
-h3# codefdfdf ---
+h2# Title2 ---
+Document with code examples ---
 ${"``` <div>backtick</div> ```"}
-dfdfsfdf s 
-> ! dfdfsfdff --/
+written by
+test testtest tesst2
+> ! Todo: fsdfdfdfsfdf --/
 
 
 `;
@@ -799,25 +914,25 @@ const handleTyping = ({ initTag , typing  })=>{
     };
 };
 // 문자열을 나눔
-const splitToLines = ({ typing , storage , splitUnit , tag  })=>{
+const splitToLines = ({ typing , storage: storage1 , splitUnit , tag  })=>{
     const hasTag = (typings)=>hasTagIn(typings);
     let splitedTyping = typing.split(splitUnit) //arr
     ;
     console.log(splitedTyping);
     // 전체 문자열 개행으로 나누기
     return splitedTyping.reduce((acc, newline, i, s)=>{
-        let { close , text , code  } = -1;
+        let { close , text: text1 , code  } = -1;
         readNewline({
             tag,
             newline,
-            storage,
+            storage: storage1,
             hasTag: hasTag(splitedTyping.join(splitUnit))
         });
         console.log(newline);
-    }, storage);
+    }, storage1);
 };
 // 나누어진 문자열을 띄움으로 문자열 읽음
-const readNewline = ({ tag , newline , storage  })=>{
+const readNewline = ({ tag , newline , storage: storage1  })=>{
     let newlineArr = newline.trim().split(" ").filter((s)=>s !== "");
     console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6");
     console.log("[newline]", newline);
@@ -839,12 +954,13 @@ const readNewline = ({ tag , newline , storage  })=>{
         ;
         console.log("-----[curTag]", curTag, curTag.open);
         tag.memoOpen({
-            symbol: curTag.open
-        });
-    }, storage);
-    return storage;
+            symbol: curTag.open ?? curStr
+        }) //여는태그가 없는 경우, 일반 텍스트정보
+        ;
+    }, storage1);
+    return storage1;
 };
-const initTag = tag(splitOrder);
+const initTag = tag(pairOfTags);
 const splitedTypings = handleTyping({
     initTag,
     typing: test1
