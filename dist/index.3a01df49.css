@@ -1,3 +1,14 @@
+body {
+  margin: 0;
+}
 
+main {
+  width: 70vw;
+  height: 100vh;
+}
+
+.background-rects {
+  padding: 10px;
+}
 
 /*# sourceMappingURL=index.3a01df49.css.map */
