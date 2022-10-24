@@ -136,12 +136,24 @@ const init = ( store ) =>
 
     const updatePosition = store =>
     {
-        let {moveTo, cur} = store.get()
+        let {moveTo, cur, apple, trap} = store.get()
         const nextPosition = [...cur.map( ( pos, idx ) => pos + moveTo[idx] )]
         const prevBlock = el.id( `square-${cur[0]}-${cur[1]}` )
         const movedBlock = el.id( `square-${nextPosition[0]}-${nextPosition[1]}` )
-        setAttr( 'svg', prevBlock, {'fill': 'red'} )
-        setAttr( 'svg', movedBlock, {'fill': 'green'} )
+        if ( ( apple[0] === cur[0] && apple[1] === cur[1] ) )
+        {
+            setAttr( 'svg', prevBlock, {'fill': 'yellow'} )
+            setAttr( 'svg', movedBlock, {'fill': 'green'} )
+        } else if ( trap[0] === cur[0] && trap[1] === cur[1] )
+        {
+            setAttr( 'svg', prevBlock, {'fill': 'black'} )
+            setAttr( 'svg', movedBlock, {'fill': 'green'} )
+
+        } else
+        {
+            setAttr( 'svg', prevBlock, {'fill': 'red'} )
+            setAttr( 'svg', movedBlock, {'fill': 'green'} )
+        }
         store.set( {cur: nextPosition} )
         console.log( moveTo, cur )
         return store

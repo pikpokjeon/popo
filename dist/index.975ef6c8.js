@@ -680,18 +680,34 @@ const init = (store)=>{
         ])
     ]);
     const updatePosition = (store)=>{
-        let { moveTo , cur  } = store.get();
+        let { moveTo , cur , apple , trap  } = store.get();
         const nextPosition = [
             ...cur.map((pos, idx)=>pos + moveTo[idx])
         ];
         const prevBlock = (0, _utilsJs.el).id(`square-${cur[0]}-${cur[1]}`);
         const movedBlock = (0, _utilsJs.el).id(`square-${nextPosition[0]}-${nextPosition[1]}`);
-        (0, _libJs.setAttr)("svg", prevBlock, {
-            "fill": "red"
-        });
-        (0, _libJs.setAttr)("svg", movedBlock, {
-            "fill": "green"
-        });
+        if (apple[0] === cur[0] && apple[1] === cur[1]) {
+            (0, _libJs.setAttr)("svg", prevBlock, {
+                "fill": "yellow"
+            });
+            (0, _libJs.setAttr)("svg", movedBlock, {
+                "fill": "green"
+            });
+        } else if (trap[0] === cur[0] && trap[1] === cur[1]) {
+            (0, _libJs.setAttr)("svg", prevBlock, {
+                "fill": "black"
+            });
+            (0, _libJs.setAttr)("svg", movedBlock, {
+                "fill": "green"
+            });
+        } else {
+            (0, _libJs.setAttr)("svg", prevBlock, {
+                "fill": "red"
+            });
+            (0, _libJs.setAttr)("svg", movedBlock, {
+                "fill": "green"
+            });
+        }
         store.set({
             cur: nextPosition
         });
