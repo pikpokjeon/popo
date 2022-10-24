@@ -561,25 +561,30 @@ const placeItems = (store)=>new Promise((res)=>{
         // const {trapP, appleP} = randomPosition( {trap: trap, apple: apple} )
         let trapP = randomPosition(trap);
         let appleP = randomPosition(apple);
+        let current = randomPosition(cur);
         store.set({
             apple: appleP
+        });
+        store.set({
+            cur: current
         });
         store.set({
             trap: trapP
         });
         const trapS = (0, _utilsJs.el).id(`square-${trapP[0]}-${trapP[1]}`);
         const appleS = (0, _utilsJs.el).id(`square-${appleP[0]}-${appleP[1]}`);
+        const currentS = (0, _utilsJs.el).id(`square-${current[0]}-${current[1]}`);
         // svg 요소간 비교 true, false
         // console.log(trapS === trapS, trapS === appleS)
         return res({
             trapS,
             appleS,
+            currentS,
             store
         });
     });
 // 재사용가능하도록 변경필요
-const setColor = ({ trapS , appleS , store  })=>new Promise((res)=>{
-        console.log(store);
+const setColor = ({ trapS , appleS , currentS , store  })=>new Promise((res)=>{
         if (trapS && appleS) {
             (0, _libJs.setAttr)("svg", trapS, {
                 "fill": "black"
@@ -587,7 +592,10 @@ const setColor = ({ trapS , appleS , store  })=>new Promise((res)=>{
             (0, _libJs.setAttr)("svg", appleS, {
                 "fill": "yellow"
             });
-        } else return placeItems(store).then(setColor).then(renderTiles);
+        } else if (currentS) (0, _libJs.setAttr)("svg", currentS, {
+            "fill": "green"
+        });
+        else return placeItems(store).then(setColor).then(renderTiles);
         return res({
             store
         });
@@ -643,10 +651,8 @@ const init = (store)=>{
         return Rects(iX + 1, iY, arr, width);
     };
     placeItems(store).then(setColor).then(renderTiles);
-    const current = randomPosition(cur);
-    store.set({
-        cur: current
-    });
+    // const current = randomPosition( cur )
+    // store.set( {cur: current} )
     const loopMove = (store)=>{
         let { cur , moveTo  } = store.get();
         const after = cur.map((c, i)=>c + moveTo[i]);
@@ -678,10 +684,19 @@ const init = (store)=>{
         const nextPosition = [
             ...cur.map((pos, idx)=>pos + moveTo[idx])
         ];
+        const prevBlock = (0, _utilsJs.el).id(`square-${cur[0]}-${cur[1]}`);
+        const movedBlock = (0, _utilsJs.el).id(`square-${nextPosition[0]}-${nextPosition[1]}`);
+        (0, _libJs.setAttr)("svg", prevBlock, {
+            "fill": "red"
+        });
+        (0, _libJs.setAttr)("svg", movedBlock, {
+            "fill": "green"
+        });
         store.set({
             cur: nextPosition
         });
         console.log(moveTo, cur);
+        return store;
     };
     let prevKey = -1;
     const keyInput = (e)=>{
@@ -704,7 +719,7 @@ const init = (store)=>{
                 //up
                 store.set({
                     moveTo: [
-                        1,
+                        -1,
                         0
                     ]
                 });
@@ -728,7 +743,7 @@ const init = (store)=>{
                 //down
                 store.set({
                     moveTo: [
-                        -1,
+                        1,
                         0
                     ]
                 });

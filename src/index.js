@@ -30,25 +30,31 @@ const placeItems = ( store ) => new Promise( ( res ) =>
     // const {trapP, appleP} = randomPosition( {trap: trap, apple: apple} )
     let trapP = randomPosition( trap )
     let appleP = randomPosition( apple )
+    let current = randomPosition( cur )
     store.set( {apple: appleP} )
+    store.set( {cur: current} )
     store.set( {trap: trapP} )
     const trapS = el.id( `square-${trapP[0]}-${trapP[1]}` )
     const appleS = el.id( `square-${appleP[0]}-${appleP[1]}` )
+    const currentS = el.id( `square-${current[0]}-${current[1]}` )
     // svg 요소간 비교 true, false
     // console.log(trapS === trapS, trapS === appleS)
-    return res( {trapS, appleS, store} )
+    return res( {trapS, appleS, currentS, store} )
 } )
 // 재사용가능하도록 변경필요
-const setColor = ( {trapS, appleS, store} ) => new Promise
+const setColor = ( {trapS, appleS, currentS, store} ) => new Promise
     ( ( res ) =>
     {
-        console.log( store )
         if ( trapS && appleS )
         {
             setAttr( 'svg', trapS, {'fill': 'black'} )
             setAttr( 'svg', appleS, {'fill': 'yellow'} )
 
-        } else
+        } else if ( currentS )
+        {
+            setAttr( 'svg', currentS, {'fill': 'green'} )
+        }
+        else
         {
             return placeItems( store ).then( setColor ).then( renderTiles )
 
@@ -106,8 +112,8 @@ const init = ( store ) =>
     }
 
     placeItems( store ).then( setColor ).then( renderTiles )
-    const current = randomPosition( cur )
-    store.set( {cur: current} )
+    // const current = randomPosition( cur )
+    // store.set( {cur: current} )
     const loopMove = ( store ) =>
     {
         let {cur, moveTo} = store.get()
@@ -132,8 +138,13 @@ const init = ( store ) =>
     {
         let {moveTo, cur} = store.get()
         const nextPosition = [...cur.map( ( pos, idx ) => pos + moveTo[idx] )]
+        const prevBlock = el.id( `square-${cur[0]}-${cur[1]}` )
+        const movedBlock = el.id( `square-${nextPosition[0]}-${nextPosition[1]}` )
+        setAttr( 'svg', prevBlock, {'fill': 'red'} )
+        setAttr( 'svg', movedBlock, {'fill': 'green'} )
         store.set( {cur: nextPosition} )
         console.log( moveTo, cur )
+        return store
     }
 
     let prevKey = -1
@@ -153,7 +164,7 @@ const init = ( store ) =>
                 break
             case 38:
                 //up
-                store.set( {moveTo: [1, 0]} )
+                store.set( {moveTo: [-1, 0]} )
                 updatePosition( store )
                 e.preventDefault()
                 prevKey = 38
@@ -170,7 +181,7 @@ const init = ( store ) =>
 
             case 40:
                 //down
-                store.set( {moveTo: [-1, 0]} )
+                store.set( {moveTo: [1, 0]} )
                 e.preventDefault()
                 updatePosition( store )
 
