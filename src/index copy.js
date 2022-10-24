@@ -15,7 +15,7 @@ const randomPosition = ( initPosition ) =>
     const randomY = random( tiles - 20 )
     console.log( randomX, randomY )
     if ( initPosition[0] !== randomY || initPosition[1] !== randomX ) return [randomY, randomX]
-    return [...initPosition]
+    else return [...initPosition]
 
 }
 
@@ -108,16 +108,7 @@ const init = ( store ) =>
     placeItems( store ).then( setColor ).then( renderTiles )
     const current = randomPosition( cur )
     store.set( {cur: current} )
-    const loopMove = ( store ) =>
-    {
-        let {cur, moveTo} = store.get()
-        const after = cur.map( ( c, i ) => c + moveTo[i] )
-        store.set( {'cur': [...after]} )
-        console.log( after )
-        console.log( store.get(), cur, direction )
-        return store
 
-    }
     const tileGroup = children => group( {id: 'tile-group'}, [...children] )
 
     const svgg = svgRoot( {visibility: 'visible', width, height},
@@ -128,77 +119,55 @@ const init = ( store ) =>
                 ] )
         ] )
 
-    const updatePosition = store =>
+    const loopMove = ( store, direction = [0, 0] ) =>
+    {
+        let {cur, moveTo} = store.get()
+        const after = cur.map( ( c, i ) => c + direction[i] )
+        store.set( {'cur': [...after]} )
+        console.log( after )
+        console.log( store.get(), cur, direction )
+        return store
+
+    }
+    const keyInput = store => e =>
     {
         let {moveTo, cur} = store.get()
-        const nextPosition = [...cur.map( ( pos, idx ) => pos + moveTo[idx] )]
-        store.set( {cur: nextPosition} )
-        console.log( moveTo, cur )
-    }
-
-    let prevKey = -1
-
-    const keyInput = e =>
-    {
         console.log( e.keyCode )
-        console.log( '[이전에 누른키]--', prevKey )
         switch ( e.keyCode )
         {
             case 37:
                 //left
+                console.log( moveTo, cur )
                 store.set( {moveTo: [0, -1]} )
-                updatePosition( store )
+                store = loopMove( store, [0, -1] )
+                console.log( moveTo, cur )
+
                 e.preventDefault()
-                prevKey = 37
                 break
             case 38:
                 //up
-                store.set( {moveTo: [1, 0]} )
-                updatePosition( store )
                 e.preventDefault()
-                prevKey = 38
                 break
-
             case 39:
                 //right
-                store.set( {moveTo: [0, 1]} )
                 e.preventDefault()
-                updatePosition( store )
-
-                prevKey = 39
                 break
-
             case 40:
                 //down
-                store.set( {moveTo: [-1, 0]} )
                 e.preventDefault()
-                updatePosition( store )
-
-                prevKey = 40
                 break
-
             case 32:
                 //space - pause
-                store.set( {moveTo: [0, 0]} )
                 e.preventDefault()
-                prevKey = 32
                 break
-
             case 27:
                 //esc stop
-                store.set( {moveTo: [0, 0]} )
                 e.preventDefault()
-                prevKey = 27
                 break
-
-            default:
-                prevKey = e.keyCode
         }
-        console.log( '[방금 누른키]--', prevKey )
-
     }
 
-    document.addEventListener( 'keydown', keyInput )
+    document.addEventListener( 'keydown', keyInput( store ) )
 
 
     main.appendChild( svgg )
@@ -282,21 +251,21 @@ const Storage = ( init ) =>
     const get = ( key ) => Object.assign( {}, {...( storage[key] ?? storage )} )
     const set = ( obj ) =>
     {
-        console.log( obj )
-        for ( const key of Object.keys( obj ) )
+        for ( const [key] of Object.keys( obj ) )
         {
             if ( !storage[key] ) storage[key] = obj[key]
             else //기존 데이터를 변경하는 경우, - 이를 사용하는 함수에 알려줘야함
             {
                 Reflect.set( storage, key, obj[key] )
             }
-            console.log( storage[key] )
-        }
-        return storage
 
+        }
+        console.log( storage )
+        return storage
     }
 
     return {get, set}
 }
 const storage = Storage( initPlayData )
 init( storage )
+console.log( [1, 0] == [1, 0] )
