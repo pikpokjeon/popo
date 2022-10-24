@@ -1,4 +1,4 @@
-import {setAttr, updateChildren, element, fragment, renderTo, } from './lib.js'
+import {setAttr, updateChildren, element, fragment, renderTo, setAttrs, } from './lib.js'
 import {el, is} from './utils.js'
 
 const svg = element( 'svg' )
@@ -47,12 +47,12 @@ const setColor = ( {trapS, appleS, currentS, store} ) => new Promise
     {
         if ( trapS && appleS )
         {
-            setAttr( 'svg', trapS, {'fill': 'black'} )
-            setAttr( 'svg', appleS, {'fill': 'yellow'} )
+            setAttr( 'svg', trapS, {'fill': 'blue'} )
+            setAttr( 'svg', appleS, {'fill': '#ff00cd'} )
 
         } else if ( currentS )
         {
-            setAttr( 'svg', currentS, {'fill': 'green'} )
+            setAttr( 'svg', currentS, {'fill': '#00ff9c'} )
         }
         else
         {
@@ -89,6 +89,7 @@ const init = ( store ) =>
     const svgRoot = svg( 'svg', {id: 'svg-root', class: 'game-screen'} )
     const group = svg( 'g', {id: 'tiles-group'} )
     const rect = svg( 'rect' )
+    const circle = svg( 'circle' )
     const Rects = ( iX, iY, arr, width, height ) =>
     {
         const tiles = 50 //storage에 관리
@@ -105,10 +106,10 @@ const init = ( store ) =>
         }
         const x = width / tiles * iX
         const y = width / tiles * iY
-        const square = rect( {name: 'square', class: 'background-rects', id: `square-${iY}-${iX}`, width: width / tiles, height: width / tiles, x, y, fill: 'red', stroke: 'white'} )
+        const square = rect( {name: 'square', class: 'background-rects', id: `square-${iY}-${iX}`, width: width / tiles, height: width / tiles, x, y, stroke: '#280e74', OPACITY: 0.2} )
         arr.push( square )
 
-        return Rects( iX + 1, iY, arr, width )
+        return Rects( iX + 1, iY, arr, width, height )
     }
 
     placeItems( store ).then( setColor ).then( renderTiles )
@@ -130,32 +131,48 @@ const init = ( store ) =>
         [
             group(
                 [
-                    tileGroup( Rects( 0, 1, [], width ) )
-                ] )
+                    tileGroup( Rects( 0, 1, [], width, height ) )
+                ] ),
+            // circle' coordinate each x,y is the -> -r (rect/2)
+            group( [circle( {id: 'aim-circle', cx: 10, cy: 10, r: 5, stroke: 'white'} )] )
         ] )
+
 
     const updatePosition = store =>
     {
-        let {moveTo, cur, apple, trap} = store.get()
+        let {moveTo, cur, apple, trap, hasRangeToShoot, aimTo, aimDistance} = store.get()
         const nextPosition = [...cur.map( ( pos, idx ) => pos + moveTo[idx] )]
+        const aimPosition = [...cur.map( ( pos, idx ) => pos + ( moveTo[idx] * ( aimDistance + 1 ) ) )]
+        store.set( {aimTo: aimPosition} )
         const prevBlock = el.id( `square-${cur[0]}-${cur[1]}` )
+        const prevAimBlock = el.id( `square-${aimTo[0]}-${aimTo[1]}` )
         const movedBlock = el.id( `square-${nextPosition[0]}-${nextPosition[1]}` )
+        const aimBlock = el.id( `square-${aimPosition[0]}-${aimPosition[1]}` )
+        const aimCircle = el.id( 'aim-circle' )
+        const aimCoord = {
+            x: aimBlock.getAttribute( 'x' ), y: aimBlock.getAttribute( 'y' )
+        }
+        setAttrs( aimCircle, {cx: aimCoord.x, cy: aimCoord.y} )
+        console.log( '[updatePosition함수],aimBlcok>', aimBlock, aimPosition, aimCoord )
         if ( ( apple[0] === cur[0] && apple[1] === cur[1] ) )
         {
             setAttr( 'svg', prevBlock, {'fill': 'yellow'} )
-            setAttr( 'svg', movedBlock, {'fill': 'green'} )
+            setAttr( 'svg', movedBlock, {'fill': '#00ff9c'} )
         } else if ( trap[0] === cur[0] && trap[1] === cur[1] )
         {
-            setAttr( 'svg', prevBlock, {'fill': 'black'} )
+            setAttr( 'svg', prevBlock, {'fill': 'blue'} )
             setAttr( 'svg', movedBlock, {'fill': 'green'} )
 
         } else
         {
-            setAttr( 'svg', prevBlock, {'fill': 'red'} )
-            setAttr( 'svg', movedBlock, {'fill': 'green'} )
+            setAttr( 'svg', aimBlock, {'opacity': 0.3, fill: 'yellow'} )
+            setAttr( 'svg', prevBlock, {'fill': '#0e0434', opacity: 0.1} )
+            setAttr( 'svg', movedBlock, {'fill': '#00ff9c', opacity: 1} )
         }
+        setAttr( 'svg', prevAimBlock, {'opacity': 1} )
+
         store.set( {cur: nextPosition} )
-        console.log( moveTo, cur )
+        console.log( moveTo, cur, aimPosition, aimBlock )
         return store
     }
 
@@ -185,8 +202,8 @@ const init = ( store ) =>
             case 39:
                 //right
                 store.set( {moveTo: [0, 1]} )
-                e.preventDefault()
                 updatePosition( store )
+                e.preventDefault()
 
                 prevKey = 39
                 break
@@ -194,8 +211,8 @@ const init = ( store ) =>
             case 40:
                 //down
                 store.set( {moveTo: [1, 0]} )
-                e.preventDefault()
                 updatePosition( store )
+                e.preventDefault()
 
                 prevKey = 40
                 break
@@ -213,6 +230,25 @@ const init = ( store ) =>
                 e.preventDefault()
                 prevKey = 27
                 break
+            case 65:
+                // shooting
+                if ( prevKey < 40 && prevKey % 5 % 2 === 0 )
+                {
+                    console.log( '[key] 좌우 향할때 발사' )
+                } else
+                {
+                    console.log( '[key] 위아래 향할때 발사' )
+
+                }
+                e.preventDefault()
+
+                break
+            case 81:
+                // set has range aim to shoot
+                const hasRange = store.get( 'hasRangeToShoot' )
+                if ( !hasRange ) store.set( {hasRangeToShoot: true} )
+                else store.set( {hasRangeToShoot: false} )
+
 
             default:
                 prevKey = e.keyCode
@@ -284,6 +320,8 @@ const channel = ( initData ) =>
 const initPlayData = {
     cur: [0, 0],
     moveTo: [0, 1],
+    aimTo: [0, 1],
+    aimDistance: 3,
     key: 36,
     level: 0,
     speed: 1,
@@ -294,6 +332,7 @@ const initPlayData = {
     width: -1,
     height: -1,
     totalTiles: 50,
+    hasRangeToShoot: false,
 }
 const loop = ( store ) => 
 {

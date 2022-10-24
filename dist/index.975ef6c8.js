@@ -587,13 +587,13 @@ const placeItems = (store)=>new Promise((res)=>{
 const setColor = ({ trapS , appleS , currentS , store  })=>new Promise((res)=>{
         if (trapS && appleS) {
             (0, _libJs.setAttr)("svg", trapS, {
-                "fill": "black"
+                "fill": "blue"
             });
             (0, _libJs.setAttr)("svg", appleS, {
-                "fill": "yellow"
+                "fill": "#ff00cd"
             });
         } else if (currentS) (0, _libJs.setAttr)("svg", currentS, {
-            "fill": "green"
+            "fill": "#00ff9c"
         });
         else return placeItems(store).then(setColor).then(renderTiles);
         return res({
@@ -626,6 +626,7 @@ const init = (store)=>{
         id: "tiles-group"
     });
     const rect = svg("rect");
+    const circle = svg("circle");
     const Rects = (iX, iY, arr, width, height)=>{
         const tiles = 50 //storage에 관리
         ;
@@ -644,11 +645,11 @@ const init = (store)=>{
             height: width / tiles,
             x,
             y,
-            fill: "red",
-            stroke: "white"
+            stroke: "#280e74",
+            OPACITY: 0.2
         });
         arr.push(square);
-        return Rects(iX + 1, iY, arr, width);
+        return Rects(iX + 1, iY, arr, width, height);
     };
     placeItems(store).then(setColor).then(renderTiles);
     // const current = randomPosition( cur )
@@ -676,42 +677,79 @@ const init = (store)=>{
         height
     }, [
         group([
-            tileGroup(Rects(0, 1, [], width))
+            tileGroup(Rects(0, 1, [], width, height))
+        ]),
+        // circle' coordinate each x,y is the -> -r (rect/2)
+        group([
+            circle({
+                id: "aim-circle",
+                cx: 10,
+                cy: 10,
+                r: 5,
+                stroke: "white"
+            })
         ])
     ]);
     const updatePosition = (store)=>{
-        let { moveTo , cur , apple , trap  } = store.get();
+        let { moveTo , cur , apple , trap , hasRangeToShoot , aimTo , aimDistance  } = store.get();
         const nextPosition = [
             ...cur.map((pos, idx)=>pos + moveTo[idx])
         ];
+        const aimPosition = [
+            ...cur.map((pos, idx)=>pos + moveTo[idx] * (aimDistance + 1))
+        ];
+        store.set({
+            aimTo: aimPosition
+        });
         const prevBlock = (0, _utilsJs.el).id(`square-${cur[0]}-${cur[1]}`);
+        const prevAimBlock = (0, _utilsJs.el).id(`square-${aimTo[0]}-${aimTo[1]}`);
         const movedBlock = (0, _utilsJs.el).id(`square-${nextPosition[0]}-${nextPosition[1]}`);
+        const aimBlock = (0, _utilsJs.el).id(`square-${aimPosition[0]}-${aimPosition[1]}`);
+        const aimCircle = (0, _utilsJs.el).id("aim-circle");
+        const aimCoord = {
+            x: aimBlock.getAttribute("x"),
+            y: aimBlock.getAttribute("y")
+        };
+        (0, _libJs.setAttrs)(aimCircle, {
+            cx: aimCoord.x,
+            cy: aimCoord.y
+        });
+        console.log("[updatePosition함수],aimBlcok>", aimBlock, aimPosition, aimCoord);
         if (apple[0] === cur[0] && apple[1] === cur[1]) {
             (0, _libJs.setAttr)("svg", prevBlock, {
                 "fill": "yellow"
             });
             (0, _libJs.setAttr)("svg", movedBlock, {
-                "fill": "green"
+                "fill": "#00ff9c"
             });
         } else if (trap[0] === cur[0] && trap[1] === cur[1]) {
             (0, _libJs.setAttr)("svg", prevBlock, {
-                "fill": "black"
+                "fill": "blue"
             });
             (0, _libJs.setAttr)("svg", movedBlock, {
                 "fill": "green"
             });
         } else {
+            (0, _libJs.setAttr)("svg", aimBlock, {
+                "opacity": 0.3,
+                fill: "yellow"
+            });
             (0, _libJs.setAttr)("svg", prevBlock, {
-                "fill": "red"
+                "fill": "#0e0434",
+                opacity: 0.1
             });
             (0, _libJs.setAttr)("svg", movedBlock, {
-                "fill": "green"
+                "fill": "#00ff9c",
+                opacity: 1
             });
         }
+        (0, _libJs.setAttr)("svg", prevAimBlock, {
+            "opacity": 1
+        });
         store.set({
             cur: nextPosition
         });
-        console.log(moveTo, cur);
+        console.log(moveTo, cur, aimPosition, aimBlock);
         return store;
     };
     let prevKey = -1;
@@ -751,8 +789,8 @@ const init = (store)=>{
                         1
                     ]
                 });
-                e.preventDefault();
                 updatePosition(store);
+                e.preventDefault();
                 prevKey = 39;
                 break;
             case 40:
@@ -763,8 +801,8 @@ const init = (store)=>{
                         0
                     ]
                 });
-                e.preventDefault();
                 updatePosition(store);
+                e.preventDefault();
                 prevKey = 40;
                 break;
             case 32:
@@ -789,6 +827,21 @@ const init = (store)=>{
                 e.preventDefault();
                 prevKey = 27;
                 break;
+            case 65:
+                // shooting
+                if (prevKey < 40 && prevKey % 5 % 2 === 0) console.log("[key] 좌우 향할때 발사");
+                else console.log("[key] 위아래 향할때 발사");
+                e.preventDefault();
+                break;
+            case 81:
+                // set has range aim to shoot
+                const hasRange = store.get("hasRangeToShoot");
+                if (!hasRange) store.set({
+                    hasRangeToShoot: true
+                });
+                else store.set({
+                    hasRangeToShoot: false
+                });
             default:
                 prevKey = e.keyCode;
         }
@@ -849,6 +902,11 @@ const initPlayData = {
         0,
         1
     ],
+    aimTo: [
+        0,
+        1
+    ],
+    aimDistance: 3,
     key: 36,
     level: 0,
     speed: 1,
@@ -864,7 +922,8 @@ const initPlayData = {
     isKeyDown: false,
     width: -1,
     height: -1,
-    totalTiles: 50
+    totalTiles: 50,
+    hasRangeToShoot: false
 };
 const loop = (store)=>{
     let storage = store.get();

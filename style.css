@@ -5,8 +5,9 @@ body{
     margin:0
 }
 main{
-    width: 70VW;
+    width: 100VW;
     height: 100VH;
+    background-color: #02282a;
 }
 
 .background-rects{

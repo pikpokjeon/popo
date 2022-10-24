@@ -3,8 +3,9 @@ body {
 }
 
 main {
-  width: 70vw;
+  width: 100vw;
   height: 100vh;
+  background-color: #02282a;
 }
 
 .background-rects {
