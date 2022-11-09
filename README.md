@@ -6,8 +6,8 @@ popo the mini frontend vanila js library to manage DOM and States
 ---
 
 | Code  |    Result    |    Dom|
-|--------|--------|
-|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/code1.png' width =450 >|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/dom.png' width =250 >|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/render.png' width =250 >|
+|--------|--------|--------|
+|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/code1.png' width =450 >|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/dom.png' width =250 >|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/render.png' width =350 >|
 
 
 ```javascript
@@ -40,8 +40,8 @@ root.appendChild(svgTree)
 // 1. Declare which DOM you want to make, 'html' or 'svg'
 const HTML = element('html')
 
-//2. Declare which type of the DOM you want to make
-const messageBox = HTML('div')
+//2. Declare which type of the DOM you want to make wit prefix
+const messageBox = HTML('div',{class: 'message_box')
 const message = HTML('p')
 const box = HTML('section')
 
