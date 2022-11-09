@@ -1,6 +1,6 @@
-import {el, pipe, is}  from './src/utils.js'
-import {element, fragment,setAttrs, appendTo,renderTo}    from './src/lib.js'
+import {el, iterate, is} from './src/utils.js'
+import {element, fragment, setAttrs, o} from './src/lib.js'
 
-const Popo = {el, is, element, fragment, setAttrs, appendTo, renderTo}
+const Popo = {el, is, element, fragment, setAttrs, iterate}
 
 export {Popo}
