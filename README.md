@@ -5,6 +5,10 @@ popo the mini frontend vanila js library to manage DOM and States
 ### [Working on features] -09,Oct,2022
 ---
 
+| Example  |    Result    |    
+|--------|--------|
+|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/code.png' width =450 >|<img src='https://github.com/pikpokjeon/popo/blob/main/assets/popotest.png' width =250 >|
+
 
 ```javascript
 import {Popo} from 'popo-dom'
