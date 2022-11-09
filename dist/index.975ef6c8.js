@@ -534,33 +534,122 @@ function hmrAcceptRun(bundle, id) {
 },{}],"8lqZg":[function(require,module,exports) {
 var _libJs = require("./lib.js");
 var _utilsJs = require("./utils.js");
-const svg = (0, _libJs.element)("svg");
+const rootElem = document.getElementById("main");
 const html = (0, _libJs.element)("html");
-const listTitle = (idx)=>html("h3", {
-        "class": "list-title",
-        "text": `[${idx}] List`
-    });
-const base = (idx)=>html("article", {
-        "class": "list-wrapper",
-        "id": `list-${idx}`,
-        "text": idx
-    });
+// *Prefix
+const groupTitle = html("h3", {
+    class: "group-title"
+});
+const listTitle = html("h4", {
+    "class": "list-title"
+});
+const base = html("article", {
+    "class": "list-wrapper"
+});
 const list = html("ul", {
     "class": "list-ul"
 });
 const listItem = html("li", {
     "class": "list-item"
 });
-const listItem2 = Array.from(Array(10).fill(0).map((_, i)=>i + 1)).map((num)=>listItem({
-        text: num
-    }));
-const rootElem = document.getElementById("main");
-const tree = list([
-    ...listItem2
-]);
-rootElem.appendChild(tree);
+const listWithTitles = (boxIdx, startIdx)=>(0, _utilsJs.iterate)({
+        length: 10,
+        startIdx
+    }).map((num)=>listItem({
+            id: `list-item-${boxIdx}-${num}`
+        }, [
+            listTitle({
+                "text": `[${num}] List`
+            })
+        ]));
+const listBox = (0, _utilsJs.iterate)({
+    length: 5,
+    startIdx: 0
+}).map((_)=>base);
+const tree = listBox.map((box, idx)=>box({
+        "id": `list-${idx}`
+    }, [
+        list([
+            groupTitle({
+                "text": `${idx}-Group`
+            }),
+            ...listWithTitles(idx, 10 * idx + 1)
+        ])
+    ]));
+tree.forEach((group)=>rootElem.appendChild(group));
 
-},{"./lib.js":"3bBc4","./utils.js":"en4he"}],"3bBc4":[function(require,module,exports) {
+},{"./utils.js":"en4he","./lib.js":"3bBc4"}],"en4he":[function(require,module,exports) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "pipe", ()=>pipe);
+parcelHelpers.export(exports, "el", ()=>el);
+parcelHelpers.export(exports, "is", ()=>is);
+parcelHelpers.export(exports, "isChildren", ()=>isChildren);
+parcelHelpers.export(exports, "setObj", ()=>setObj);
+parcelHelpers.export(exports, "iterate", ()=>iterate);
+const id = (id)=>document.getElementById(id);
+const name = (name)=>document.getElementsByName(name);
+const pipe = (initData, ...fns)=>fns.reduce((returned, fn)=>fn(returned), initData);
+const el = {
+    id,
+    name
+};
+const typeOf = [
+    "number",
+    "function",
+    "string",
+    "undefined",
+    "symbol",
+    "object"
+];
+const initType = {
+    array: (d)=>Array.isArray(d),
+    null: (d)=>d === null,
+    svg: (svg)=>svg instanceof SVGElement,
+    html: (el)=>/<\/?[a-z][\s\S]*>/i.test(el)
+};
+const is = typeOf.reduce((typeObj, type)=>Object.assign(typeObj, {
+        [type]: (d)=>typeof d === type
+    }), {
+    ...initType
+});
+const isChildren = (data)=>is["array"](data) || is["string"](data) || "nodeName" in data;
+const setObj = ({ storage , key , data  })=>{
+// Reflect.set( storage[key], data, tempData )
+};
+const iterate = ({ length , startIdx  })=>Array.from(Array(length).fill(startIdx)).map((idx, i)=>idx + i);
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"3bBc4":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "setAttrs", ()=>setAttrs);
@@ -601,31 +690,20 @@ const removeChildren = (parent)=>{
 };
 const appendTo = (parent)=>{
     if ((0, _utilsJs.is)["undefined"](parent)) return console.log("NO PARENT");
+    const child = (node)=>{
+        if (!(0, _utilsJs.is)["array"](node)) node = [
+            node
+        ];
+        return Array.from(node).reduce((acc, cur)=>{
+            acc.appendChild(cur);
+            return acc;
+        }, parent);
+    };
     return {
-        child: (node)=>{
-            if (!(0, _utilsJs.is)["array"](node)) node = [
-                node
-            ];
-            node.reduce((acc, cur)=>{
-                acc.appendChild(cur);
-                return acc;
-            }, parent);
-            return parent;
-        }
+        child
     };
 };
-const updateChildren = (type, parent, children = [])=>{
-    // if ( is['undefined']( children ) ) return parent
-    // if ( !is['array']( children ) ) children = [children]
-    // children.reduce( ( acc, cur ) =>
-    // {
-    //     acc.appendChild( cur )
-    //     return acc
-    // }, parent )
-    // return parent
-    // TODO: type 필요한가
-    return appendTo(parent).child(children);
-};
+const updateChildren = (type, parent, children = [])=>appendTo(parent).child(children);
 const createElement = (type)=>(tag, attr = {}, children = [])=>{
         const el1 = type === "svg" ? document.createElementNS("http://www.w3.org/2000/svg", tag) : document.createElement(tag);
         if ((0, _utilsJs.isChildren)(attr)) {
@@ -640,10 +718,13 @@ const setToCreate = (con, tag, attr, children)=>(0, _utilsJs.isChildren)(attr) ?
 const element = (type)=>(tag, initAttrs, initChildrend)=>(attr = {}, children = [])=>{
             let createTypeElem = createElement(type) //setType
             ;
-            let createdElem = null;
-            // const createElem = ( attr, children ) => isChildren( attr ) ? createTypeElem( tag, {}, attr ) : createTypeElem( tag, attr, children )
-            if (attr) return (0, _utilsJs.isChildren)(attr) ? createTypeElem(tag, {}, attr) : createTypeElem(tag, attr, children);
-            return (0, _utilsJs.isChildren)(initAttrs) ? setToCreate(createTypeElem, tag, {}, initAttrs) : setToCreate(createTypeElem, tag, initAttrs, initChildrend);
+            const initialAttributes = Object.assign({}, {
+                ...initAttrs
+            });
+            if (attr) return (0, _utilsJs.isChildren)(attr) ? createTypeElem(tag, {}, attr) : createTypeElem(tag, Object.assign(initialAttributes, {
+                ...attr
+            }), children);
+            return (0, _utilsJs.isChildren)(initAttrs) ? setToCreate(createTypeElem, tag, {}, initAttrs) : setToCreate(createTypeElem, tag, initialAttributes, initChildrend);
         };
 const fragment = (children)=>appendTo(document.createDocumentFragment()).child(children);
 const renderTo = (target, children = [])=>{
@@ -652,75 +733,6 @@ const renderTo = (target, children = [])=>{
     updateChildren("", root, children);
 };
 
-},{"./utils.js":"en4he","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"en4he":[function(require,module,exports) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "pipe", ()=>pipe);
-parcelHelpers.export(exports, "el", ()=>el);
-parcelHelpers.export(exports, "is", ()=>is);
-parcelHelpers.export(exports, "isChildren", ()=>isChildren);
-parcelHelpers.export(exports, "setObj", ()=>setObj);
-const id = (id)=>document.getElementById(id);
-const name = (name)=>document.getElementsByName(name);
-const pipe = (initData, ...fns)=>fns.reduce((returned, fn)=>fn(returned), initData);
-const el = {
-    id,
-    name
-};
-const typeOf = [
-    "number",
-    "function",
-    "string",
-    "undefined",
-    "symbol",
-    "object"
-];
-const initType = {
-    array: (d)=>Array.isArray(d),
-    null: (d)=>d === null,
-    svg: (svg)=>svg instanceof SVGElement,
-    html: (el)=>/<\/?[a-z][\s\S]*>/i.test(el)
-};
-const is = typeOf.reduce((typeObj, type)=>Object.assign(typeObj, {
-        [type]: (d)=>typeof d === type
-    }), {
-    ...initType
-});
-const isChildren = (data)=>is["array"](data) || is["string"](data) || "nodeName" in data;
-const setObj = ({ storage , key , data  })=>{
-// Reflect.set( storage[key], data, tempData )
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}]},["ShInH","8lqZg"], "8lqZg", "parcelRequirec138")
+},{"./utils.js":"en4he","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["ShInH","8lqZg"], "8lqZg", "parcelRequirec138")
 
 //# sourceMappingURL=index.975ef6c8.js.map

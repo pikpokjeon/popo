@@ -10,3 +10,6 @@ node_modules/
 .cache
 
 .parcel-cache/
+
+.src/example1.js
+.src/example2.js

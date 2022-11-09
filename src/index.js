@@ -1,6 +1,5 @@
 import {element} from './lib.js'
 import {iterate} from './utils.js'
-
 const rootElem = document.getElementById( 'main' )
 
 const html = element( 'html' )
