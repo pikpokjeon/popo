@@ -43,36 +43,20 @@ export const removeChildren = parent =>
 export const appendTo = parent =>
 {
     if ( is['undefined']( parent ) ) return console.log( 'NO PARENT' )
-    return ( {
-        child: node =>
+    const child = node =>
+    {
+
+        if ( !is['array']( node ) ) node = [node]
+        return Array.from( node ).reduce( ( acc, cur ) =>
         {
-            if ( !is['array']( node ) ) node = [node]
-            node.reduce( ( acc, cur ) =>
-            {
-                acc.appendChild( cur )
-                return acc
-            }, parent )
-            return parent
-        }
-    } )
+            acc.appendChild( cur )
+            return acc
+        }, parent )
+    }
+    return {child}
 }
 
-export const updateChildren = ( type, parent, children = [] ) =>
-{
-    // if ( is['undefined']( children ) ) return parent
-    // if ( !is['array']( children ) ) children = [children]
-    // children.reduce( ( acc, cur ) =>
-    // {
-    //     acc.appendChild( cur )
-    //     return acc
-    // }, parent )
-    // return parent
-
-    // TODO: type 필요한가
-    return appendTo( parent ).child( children )
-
-}
-
+export const updateChildren = ( type, parent, children = [] ) => appendTo( parent ).child( children )
 
 export const createElement = type => ( tag, attr = {}, children = [] ) =>
 {
@@ -87,24 +71,21 @@ export const createElement = type => ( tag, attr = {}, children = [] ) =>
     return el
 
 }
-const setToCreate = ( con, tag, attr, children ) => isChildren( attr ) ? con( tag, {}, attr ) : con( tag, attr, children )
 
+const setToCreate = ( con, tag, attr, children ) => isChildren( attr ) ? con( tag, {}, attr ) : con( tag, attr, children )
 
 export const element = type => ( tag, initAttrs, initChildrend ) => ( attr = {}, children = [] ) =>
 {
     let createTypeElem = createElement( type ) //setType
-    let createdElem = null
-    // const createElem = ( attr, children ) => isChildren( attr ) ? createTypeElem( tag, {}, attr ) : createTypeElem( tag, attr, children )
+    const initialAttributes = Object.assign( {}, {...initAttrs} )
     if ( attr )
     {
-        return isChildren( attr ) ? createTypeElem( tag, {}, attr ) : createTypeElem( tag, attr, children )
+        return isChildren( attr ) ? createTypeElem( tag, {}, attr ) : createTypeElem( tag, Object.assign( initialAttributes, {...attr} ), children )
     }
-    return isChildren( initAttrs ) ? setToCreate( createTypeElem, tag, {}, initAttrs ) : setToCreate( createTypeElem, tag, initAttrs, initChildrend )
+    return isChildren( initAttrs ) ? setToCreate( createTypeElem, tag, {}, initAttrs ) : setToCreate( createTypeElem, tag, initialAttributes, initChildrend )
 }
 
-
 export const fragment = ( children ) => appendTo( document.createDocumentFragment() ).child( children )
-
 
 export const renderTo = ( target, children = [] ) =>
 {
