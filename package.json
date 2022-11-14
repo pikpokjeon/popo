@@ -1,6 +1,6 @@
 {
   "name": "popo-dom",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "popo the mini frontend vanila js library to manage DOM",
   "main": "dist/cjs/index.js",
   "module": "dist/es/index.js",
